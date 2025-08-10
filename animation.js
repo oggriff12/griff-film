@@ -1,14 +1,15 @@
 /************************
- * GRIFF IS BACK — animation.js (Hulu-style hub + auth + non-blocking audio)
+ * GRIFF IS BACK — animation.js
+ * Hulu-style hub + auth + non-blocking audio + sound toggle
  ************************/
 
 /* ===== CONFIG ===== */
-const SLIDE_MS = 15000;          // ms per slide
-const EXT = "png";               // change to "jpg" if your files are jpg
+const SLIDE_MS = 15000;              // ms per slide
+const EXT = "png";                   // change to "jpg" if your files are jpg
 const EP_COUNTS = {1:7,2:7,3:7,4:6,5:6,6:6,7:6,8:6,9:6,10:6};
-const HERO_EPISODES = [1,2,3,4,5]; // hero uses epX-1 as background
+const HERO_EPISODES = [1,2,3,4,5];   // hero uses epX-1 as background
 
-// Short demo captions (fill more later)
+// Short demo captions (add more later if you want)
 const CAPTIONS = {
   1:["Wilmington — blood on bricks.","More funerals than birthdays.","He walks alone, notebook tight.","Bus to Maryland.","Kevin the mechanic.","If the streets made me…","…maybe I can unmake myself."],
   2:["LA — masks on masks.","Trap vibes, bad friends.","Venice: Tariq returns.","Studio nights, pain fuels.","Open mic calling.","Buzz grows.","The voice gets loud."]
@@ -33,9 +34,8 @@ const backBtn  = document.getElementById('back-button');
 const pauseBtn = document.getElementById('pause-toggle');
 const preloader= document.getElementById('preloader');
 
-const audio      = document.getElementById('bg-music');
-const tapOverlay = document.getElementById('tap-to-play');
-const enableAudio= document.getElementById('enable-audio');
+const audio       = document.getElementById('bg-music');
+const soundToggle = document.getElementById('sound-toggle');
 
 /* ===== NAV anchors (optional) ===== */
 document.getElementById('menu-episodes')?.addEventListener('click', e=>{
@@ -107,7 +107,7 @@ async function buildRows(){
   // Episodes: 1–10
   for(let ep=1; ep<=10; ep++) gridEpisodes.appendChild(card(ep));
 
-  // Characters section (only shows if files exist)
+  // Characters (only if exists)
   const chars = [
     {name:'Griff',   src:'assets/char-griff.png'},
     {name:'Syleste', src:'assets/char-syleste.png'},
@@ -116,7 +116,7 @@ async function buildRows(){
     {name:'Tariq',   src:'assets/char-tariq.png'},
     {name:'Zeke',    src:'assets/char-zeke.png'},
   ];
-  let shown = 0;
+  let shown=0;
   for (const c of chars){
     if (await imgExists(c.src)){
       const el=document.createElement('div');
@@ -186,43 +186,15 @@ function loadSlide(initial){
   im.src=src;
 }
 
-/* ===== NON-BLOCKING AUDIO (overlay never traps) ===== */
-let audioUnlocked = false;
-
-async function tryStartMuted(){
-  try {
-    audio.muted = true;       // start muted for autoplay policies
-    await audio.play();       // attempt silent autoplay
-  } catch { /* ignore */ }
-}
-document.addEventListener('DOMContentLoaded', tryStartMuted);
-
-async function unlockAudio(){
-  if (audioUnlocked) return;
-  audioUnlocked = true;
-  tapOverlay?.classList.add('hidden');  // always hide overlay
-  try {
-    audio.muted = false;
-    await audio.play();
-  } catch {
-    // fallback: stay muted but keep UI unblocked
-    audio.muted = true;
-    try { await audio.play(); } catch {}
-  }
-}
-enableAudio?.addEventListener('click', unlockAudio);
-// Also unlock on any interaction so homepage is never blocked
-['click','touchstart','keydown'].forEach(evt =>
-  window.addEventListener(evt, unlockAudio, { once:true, passive:true })
-);
-
-// Only show overlay on iOS Safari (and it still dismisses on any tap)
-function isIOS(){ return /iPad|iPhone|iPod/.test(navigator.userAgent); }
-function isSafari(){ return /^((?!chrome|android).)*safari/i.test(navigator.userAgent); }
-document.addEventListener('DOMContentLoaded', ()=>{
-  const shouldShow = isIOS() && isSafari();
-  if (!shouldShow) tapOverlay?.classList.add('hidden');
-  // if it is iOS Safari, overlay is visible but any tap unlocks & hides
+/* ===== SIMPLE NON-BLOCKING AUDIO + TOGGLE ===== */
+document.addEventListener('DOMContentLoaded', async () => {
+  try { await audio.play(); } catch {}
+  audio.muted = true; // start muted
+});
+soundToggle?.addEventListener('click', async () => {
+  audio.muted = !audio.muted;
+  soundToggle.textContent = audio.muted ? 'Sound: Off' : 'Sound: On';
+  if (!audio.muted) { try { await audio.play(); } catch {} }
 });
 
 /* ===== INIT ===== */
