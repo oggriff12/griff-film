@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Griff Is Back – Episode 1</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+  body { background: #000; color: #fff; font-family: sans-serif; margin:0; }
+  .episode-player { max-width: 900px; margin: auto; text-align: center; }
+  .scene img { width: 100%; height: auto; max-height: 80vh; object-fit: contain; }
+  .caption { font-size: 1.2rem; margin: 10px 0; }
+  .controls { margin: 15px 0; }
+  .controls button { padding: 8px 16px; margin: 0 4px; }
+</style>
+</head>
+<body>
+
+<div class="episode-player">
+  <h1>Episode 1: Back Where It Started</h1>
+  <div class="scene">
+    <img id="scene-img" src="assets/ep1-1.png" alt="Scene" />
+    <div class="caption" id="scene-caption">“They say the place you start… shapes the man you become.”</div>
+  </div>
+  <div class="controls">
+    <button id="prev-btn">⏮ Prev</button>
+    <button id="play-btn">▶ Play</button>
+    <button id="pause-btn">⏸ Pause</button>
+    <button id="next-btn">⏭ Next</button>
+    <a href="index.html"><button>🏠 Back to Home</button></a>
+  </div>
+</div>
+
+<script>
+const scenes = [
+  { img: "assets/ep1-1.png", text: "They say the place you start… shapes the man you become." },
+  { img: "assets/ep1-2.png", text: "For me, that place was Delaware. Wilmington. Blood on bricks. Pain in the pavement." },
+  { img: "assets/ep1-3.png", text: "By 17, I had more funerals than birthdays. I wasn’t living, just breathing." },
+  { img: "assets/ep1-4.png", text: "I left for Maryland with $40 in my pocket… and met Kevin, the redneck mechanic who changed my life." },
+  { img: "assets/ep1-5.png", text: "He taught me how to fix cars, talk to country girls, and survive without looking over my shoulder." },
+  { img: "assets/ep1-6.png", text: "But I wanted more… so I left for Los Angeles." },
+  { img: "assets/ep1-7.png", text: "The glamour faded fast — sleeping on couches, chasing peace in smoke." }
+];
+
+let index = 0;
+let autoPlay = null;
+
+const imgEl = document.getElementById("scene-img");
+const capEl = document.getElementById("scene-caption");
+const prevBtn = document.getElementById("prev-btn");
+const nextBtn = document.getElementById("next-btn");
+const playBtn = document.getElementById("play-btn");
+const pauseBtn = document.getElementById("pause-btn");
+
+function showScene(i) {
+  imgEl.src = scenes[i].img;
+  capEl.textContent = scenes[i].text;
+}
+
+prevBtn.addEventListener("click", () => {
+  index = (index - 1 + scenes.length) % scenes.length;
+  showScene(index);
+});
+
+nextBtn.addEventListener("click", () => {
+  index = (index + 1) % scenes.length;
+  showScene(index);
+});
+
+playBtn.addEventListener("click", () => {
+  clearInterval(autoPlay);
+  autoPlay = setInterval(() => {
+    index = (index + 1) % scenes.length;
+    showScene(index);
+  }, 4000); // change scene every 4 seconds
+});
+
+pauseBtn.addEventListener("click", () => {
+  clearInterval(autoPlay);
+});
+
+showScene(index);
+</script>
+
+</body>
+</html>
