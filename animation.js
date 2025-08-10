@@ -1,15 +1,16 @@
 /************************
  * GRIFF IS BACK — animation.js
- * Code-only cinematic images, Hulu-style hub, auth,
- * non-blocking audio + sound toggle, overlay show/hide fix
+ * Code-only cinematic visuals, Hulu-style hub, auth,
+ * non-blocking audio + sound toggle, overlay show/hide,
+ * and navigation to episode pages
  ************************/
 
 /* ===== CONFIG ===== */
-const SLIDE_MS = 15000;                // ms per slide
+const SLIDE_MS = 15000;                // ms per slide (overlay player)
 const EP_COUNTS = {1:7,2:7,3:7,4:6,5:6,6:6,7:6,8:6,9:6,10:6};
 const HERO_EPISODES = [1,2,3,4,5];     // hero uses EP X Scene 1
 
-// Short captions demo (extend as you like)
+// Short captions demo for overlay player
 const CAPTIONS = {
   1:["Wilmington — blood on bricks.","More funerals than birthdays.","He walks alone, notebook tight.","Bus to Maryland.","Kevin the mechanic.","If the streets made me…","…maybe I can unmake myself."],
   2:["LA — masks on masks.","Trap vibes, bad friends.","Venice: Tariq returns.","Studio nights, pain fuels.","Open mic calling.","Buzz grows.","The voice gets loud."]
@@ -26,7 +27,7 @@ const heroDots = document.getElementById('hero-dots');
 const heroPlay = document.getElementById('hero-play');
 const heroEp1  = document.getElementById('hero-ep1');
 
-const player   = document.getElementById('slideshow');
+const player   = document.getElementById('slideshow');   // overlay (hidden by default; we add .show)
 const slideImg = document.getElementById('slide');
 const captionEl= document.getElementById('caption');
 const epLabel  = document.getElementById('ep-label');
@@ -53,7 +54,6 @@ function requireAuth(fn){ return (...args)=>{ if(!isAuthed()){ window.netlifyIde
 const W = 1600, H = 900; // 16:9
 const teal   = [0, 230, 208];
 const orange = [255, 106, 0];
-
 const EP_TINTS = {
   1:[18,28,36],  2:[22,18,30],  3:[12,22,28],  4:[26,20,16],  5:[16,16,28],
   6:[18,18,22],  7:[12,22,20],  8:[22,18,28],  9:[14,14,18], 10:[12,12,16]
@@ -63,45 +63,34 @@ const canvas = document.createElement('canvas');
 canvas.width=W; canvas.height=H;
 const ctx = canvas.getContext('2d');
 
-function rgb([r,g,b]){ return `rgb(${r},${g},${b})`; }
 function rgba([r,g,b],a){ return `rgba(${r},${g},${b},${a})`; }
-function lerp(a,b,t){ return a*(1-t)+b*t; }
 
 function drawGradientSky(tint){
   const g = ctx.createLinearGradient(0,0,0,H);
   g.addColorStop(0, rgba([tint[0], tint[1], tint[2]+10], 1));
-  g.addColorStop(1, rgba([0,0,0],1));
-  ctx.fillStyle = g;
-  ctx.fillRect(0,0,W,H);
+  g.addColorStop(1, 'rgba(0,0,0,1)');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
 }
 function drawCityline(){
   ctx.fillStyle = 'rgba(15,22,28,1)';
   for(let i=0;i<18;i++){
-    const bw = 60 + Math.random()*140;
-    const bh = 120 + Math.random()*380;
-    const x  = Math.random()*(W+bw)-bw;
-    const y  = H-220 - Math.random()*180;
+    const bw = 60 + Math.random()*140, bh = 120 + Math.random()*380;
+    const x  = Math.random()*(W+bw)-bw, y  = H-220 - Math.random()*180;
     ctx.fillRect(x, y-bh, bw, bh);
   }
   ctx.fillStyle = 'rgba(20,28,36,1)';
   for(let i=0;i<12;i++){
-    const bw = 80 + Math.random()*180;
-    const bh = 180 + Math.random()*440;
-    const x  = Math.random()*(W+bw)-bw;
-    const y  = H-140 - Math.random()*80;
+    const bw = 80 + Math.random()*180, bh = 180 + Math.random()*440;
+    const x  = Math.random()*(W+bw)-bw, y  = H-140 - Math.random()*80;
     ctx.fillRect(x, y-bh, bw, bh);
   }
   for(let i=0;i<280;i++){
-    const x = Math.random()*W;
-    const y = 140 + Math.random()*(H-260);
-    const on = Math.random()>.35;
-    ctx.fillStyle = on ? 'rgba(255,164,60,.9)' : 'rgba(0,0,0,0)';
-    if(on) ctx.fillRect(x, y, 3, 7);
+    const x = Math.random()*W, y = 140 + Math.random()*(H-260);
+    if(Math.random()>.35){ ctx.fillStyle='rgba(255,164,60,.9)'; ctx.fillRect(x,y,3,7); }
   }
 }
 function drawHoodedSilhouette(){
-  ctx.save();
-  ctx.translate(W*0.52, H*0.62);
+  ctx.save(); ctx.translate(W*0.52, H*0.62);
   ctx.fillStyle='rgba(10,12,14,.95)';
   ctx.beginPath();
   ctx.moveTo(-180,180); ctx.quadraticCurveTo(-200,40,-80,-40);
@@ -115,6 +104,7 @@ function drawHoodedSilhouette(){
   ctx.restore();
 }
 function drawNeonTitle(ep, scene, subtitle){
+  // GRIFF
   ctx.save();
   ctx.shadowColor=rgba(orange,0.9); ctx.shadowBlur=28;
   ctx.fillStyle=rgba(orange,0.95);
@@ -122,25 +112,30 @@ function drawNeonTitle(ep, scene, subtitle){
   ctx.textAlign='left'; ctx.textBaseline='top';
   ctx.fillText('GRIFF', 70, 40);
   ctx.restore();
+  // IS BACK
   ctx.save();
   ctx.shadowColor=rgba(teal,0.9); ctx.shadowBlur=26;
   ctx.fillStyle=rgba(teal,0.95);
   ctx.font='900 96px system-ui,Segoe UI,Inter,Arial';
   ctx.fillText('IS BACK', 75, 170);
   ctx.restore();
+  // plaque
   ctx.fillStyle='rgba(14,22,28,.9)';
   ctx.fillRect(W-360, 110, 300, 64);
   ctx.fillStyle='rgba(220,230,235,.95)';
   ctx.font='700 30px system-ui,Segoe UI,Inter,Arial';
-  const tag = (ep===1? 'WILMINGTON  DELAWARE' : `EP ${ep}  •  SCENE ${scene}`);
   ctx.textAlign='center'; ctx.textBaseline='middle';
+  const tag = (ep===1? 'WILMINGTON  DELAWARE' : `EP ${ep}  •  SCENE ${scene}`);
   ctx.fillText(tag, W-360+150, 110+32);
-  ctx.textAlign='center'; ctx.textBaseline='bottom';
-  ctx.font='600 42px system-ui,Segoe UI,Inter,Arial';
-  ctx.fillStyle='rgba(240,240,240,.95)';
-  ctx.shadowColor='rgba(0,0,0,.65)'; ctx.shadowBlur=16;
-  if (subtitle) ctx.fillText(subtitle, W/2, H-28);
-  ctx.shadowBlur=0;
+  // subtitle
+  if (subtitle){
+    ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.font='600 42px system-ui,Segoe UI,Inter,Arial';
+    ctx.fillStyle='rgba(240,240,240,.95)';
+    ctx.shadowColor='rgba(0,0,0,.65)'; ctx.shadowBlur=16;
+    ctx.fillText(subtitle, W/2, H-28);
+    ctx.shadowBlur=0;
+  }
 }
 function addSpeckles(){
   for(let i=0;i<260;i++){
@@ -181,8 +176,10 @@ function buildHero(){
   showHero(0);
   if(heroTimer) clearInterval(heroTimer);
   heroTimer = setInterval(()=> showHero((heroIdx+1)%HERO_EPISODES.length), 6000);
-  heroPlay.onclick = requireAuth(()=> startEpisode(1,true));
-  heroEp1.onclick  = requireAuth(()=> startEpisode(1,false));
+
+  // UPDATED: navigate to episode page
+  heroPlay.onclick = requireAuth(() => { window.location.href = 'episode1.html'; });
+  heroEp1.onclick  = requireAuth(() => { window.location.href = 'episode1.html'; });
 }
 function showHero(idx, stopAuto=false){
   heroIdx = idx;
@@ -208,13 +205,21 @@ function card(ep){
     </div>
   `;
   el.querySelector('img').src = genThumb(ep);
-  el.querySelector('.watch').onclick  = requireAuth(()=> startEpisode(ep,false));
-  el.querySelector('.playall').onclick= requireAuth(()=> startEpisode(ep,true));
+
+  // UPDATED: "Watch" navigates to a page (episode{ep}.html)
+  el.querySelector('.watch').onclick  = requireAuth(() => {
+    window.location.href = `episode${ep}.html`;
+  });
+
+  // Keep "Play All" using the in-page overlay
+  el.querySelector('.playall').onclick= requireAuth(() => startEpisode(ep, true));
   return el;
 }
 function buildRows(){
   for(let ep of [1,2,3,4,5]) gridFeatured.appendChild(card(ep));
   for(let ep=1; ep<=10; ep++) gridEpisodes.appendChild(card(ep));
+
+  // Characters row (code portraits)
   const CHAR_CARDS = [
     {name:'Griff',   ep:1},
     {name:'Syleste', ep:7},
@@ -240,13 +245,13 @@ function buildRows(){
   if (shown>0) charsWrap.style.display='';
 }
 
-/* ===== PLAYER ===== */
+/* ===== OVERLAY PLAYER (used by Play All) ===== */
 let currentEp=1, currentSlide=0, timer=null, paused=false, playAllChain=false;
 
 function startEpisode(ep, chain){
   currentEp=ep; currentSlide=1; playAllChain=chain;
   paused=false; pauseBtn.textContent='⏸';
-  player.classList.add('show');        // SHOW overlay
+  player.classList.add('show');            // SHOW overlay
   loadSlide(true);
 }
 function nextEpisode(){
@@ -273,13 +278,17 @@ function loadSlide(initial){
   epLabel.textContent=`Episode ${currentEp} • Scene ${currentSlide}/${total}`;
   slideImg.classList.remove('active');
   slideImg.style.transform='scale(1.08) translateZ(0)';
+
   const subtitle = (CAPTIONS[currentEp]||[])[currentSlide-1] || '';
   const dataUrl = generateSlide(currentEp, currentSlide, subtitle);
+
   slideImg.src = dataUrl;
+  // force reflow for transition
   slideImg.offsetHeight;
   slideImg.classList.add('active');
   slideImg.style.transform='scale(1.02) translateZ(0)';
   preloader.style.opacity=0;
+
   captionEl.textContent = subtitle;
   if (initial) scheduleNext();
   currentSlide++;
