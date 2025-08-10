@@ -5,7 +5,7 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif}
-.hidden{display:none}
+.hidden{display:none !important;} /* make hidden always win */
 
 /* NAV */
 .nav{position:sticky;top:0;z-index:20;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);border-bottom:1px solid #111}
@@ -49,8 +49,11 @@ button.secondary{background:#151515;color:#ddd;border:1px solid #2a2a2a}
 .card .actions button{flex:1}
 
 /* PLAYER OVERLAY */
-.overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:50}
-#slideshow{overflow:hidden}
+/* Hidden by default. We only show it when JS adds .show */
+#slideshow{display:none !important;}
+.overlay.show{display:flex !important;}
+
+.overlay{position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:50}
 #preloader{position:absolute;top:12px;left:50%;transform:translateX(-50%);opacity:.9}
 .slide{position:absolute;inset:0;margin:auto;max-width:100vw;max-height:100vh;object-fit:contain;opacity:0;transform:scale(1.08) translateZ(0);transition:opacity 1.2s ease, transform 9s ease}
 .slide.active{opacity:1;transform:scale(1.02)}
@@ -59,8 +62,8 @@ button.secondary{background:#151515;color:#ddd;border:1px solid #2a2a2a}
 #hud button{background:#111;border:1px solid #333;color:#ddd;padding:10px 12px;border-radius:10px}
 #ep-label{opacity:.85}
 
-/* Safety: kill any leftover tap overlay if cached anywhere */
-#tap-to-play { display:none !important; }
+/* Safety: kill any old tap overlay */
+#tap-to-play{display:none !important;}
 
-/* Sound toggle small tweak */
+/* Sound toggle */
 #sound-toggle{margin-right:6px}
