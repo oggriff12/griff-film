@@ -2,85 +2,130 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Griff Is Back – Episode 1</title>
-<link rel="stylesheet" href="style.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Griff Is Back — Episode 1</title>
+<link rel="stylesheet" href="style.css"/>
 <style>
-  body { background: #000; color: #fff; font-family: sans-serif; margin:0; }
-  .episode-player { max-width: 900px; margin: auto; text-align: center; }
-  .scene img { width: 100%; height: auto; max-height: 80vh; object-fit: contain; }
-  .caption { font-size: 1.2rem; margin: 10px 0; }
-  .controls { margin: 15px 0; }
-  .controls button { padding: 8px 16px; margin: 0 4px; }
+  body{background:#000;color:#fff;margin:0;font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif}
+  .ep-wrap{max-width:1100px;margin:0 auto;padding:16px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+  .title{font-weight:800;font-size:clamp(20px,3.5vw,32px)}
+  .back{background:#151515;border:1px solid #2a2a2a;color:#ddd;border-radius:10px;padding:8px 12px;text-decoration:none}
+  .stage{position:relative;aspect-ratio:16/9;background:#070707;border:1px solid #161616;border-radius:14px;overflow:hidden}
+  .stage img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transform:scale(1.06);transition:opacity 1s ease, transform 8s ease}
+  .stage img.active{opacity:1;transform:scale(1.02)}
+  .caption{margin:10px 2px 0;font-size:clamp(16px,2.2vw,22px);text-align:center;opacity:.95}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin:14px 0}
+  .controls button{background:linear-gradient(135deg,#ff6a00,#ff9a2b);border:none;border-radius:10px;color:#111;font-weight:800;padding:10px 14px;cursor:pointer}
+  .controls button.secondary{background:#151515;color:#ddd;border:1px solid #2a2a2a}
+  .progress{height:8px;background:#111;border:1px solid #222;border-radius:999px;overflow:hidden}
+  .bar{height:100%;width:0;background:#00e6d0}
 </style>
 </head>
 <body>
+<div class="ep-wrap">
+  <div class="topbar">
+    <div class="title">Episode 1: Back Where It Started</div>
+    <a class="back" href="index.html">← Back to Home</a>
+  </div>
 
-<div class="episode-player">
-  <h1>Episode 1: Back Where It Started</h1>
-  <div class="scene">
-    <img id="scene-img" src="assets/ep1-1.png" alt="Scene" />
-    <div class="caption" id="scene-caption">“They say the place you start… shapes the man you become.”</div>
+  <div class="stage">
+    <img id="frame" alt="scene"/>
   </div>
+
+  <div id="cap" class="caption"></div>
+
   <div class="controls">
-    <button id="prev-btn">⏮ Prev</button>
-    <button id="play-btn">▶ Play</button>
-    <button id="pause-btn">⏸ Pause</button>
-    <button id="next-btn">⏭ Next</button>
-    <a href="index.html"><button>🏠 Back to Home</button></a>
+    <button id="prev">⏮ Prev</button>
+    <button id="play">▶ Play</button>
+    <button id="pause" class="secondary">⏸ Pause</button>
+    <button id="next">⏭ Next</button>
   </div>
+
+  <div class="progress"><div id="bar" class="bar"></div></div>
 </div>
 
 <script>
-const scenes = [
-  { img: "assets/ep1-1.png", text: "They say the place you start… shapes the man you become." },
-  { img: "assets/ep1-2.png", text: "For me, that place was Delaware. Wilmington. Blood on bricks. Pain in the pavement." },
-  { img: "assets/ep1-3.png", text: "By 17, I had more funerals than birthdays. I wasn’t living, just breathing." },
-  { img: "assets/ep1-4.png", text: "I left for Maryland with $40 in my pocket… and met Kevin, the redneck mechanic who changed my life." },
-  { img: "assets/ep1-5.png", text: "He taught me how to fix cars, talk to country girls, and survive without looking over my shoulder." },
-  { img: "assets/ep1-6.png", text: "But I wanted more… so I left for Los Angeles." },
-  { img: "assets/ep1-7.png", text: "The glamour faded fast — sleeping on couches, chasing peace in smoke." }
+/* ===== EPISODE 1 SCRIPT (from your outline) ===== */
+const CAPTIONS = [
+  "They say the place you start… shapes the man you become.",
+  "For me, that place was Delaware. Wilmington. Blood on bricks. Pain in the pavement.",
+  "By 17, I had more funerals than birthdays. I wasn’t living, just breathing.",
+  "I left for Maryland with $40 in my pocket… and met Kevin, the redneck mechanic with a big heart.",
+  "He taught me how to fix cars, talk to country girls, and breathe without watching my back.",
+  "But the city kept calling. I chased LA.",
+  "The glamour faded fast — couches, fake friends, and smoke chasing peace."
 ];
 
-let index = 0;
-let autoPlay = null;
+/* ===== POSTER-STYLE IMAGE GENERATOR (matching your intro vibe) ===== */
+const W=1600,H=900, teal=[0,230,208], orange=[255,106,0];
+const TINT=[18,28,36];
+const cvs=document.createElement('canvas'); cvs.width=W;cvs.height=H; const ctx=cvs.getContext('2d');
 
-const imgEl = document.getElementById("scene-img");
-const capEl = document.getElementById("scene-caption");
-const prevBtn = document.getElementById("prev-btn");
-const nextBtn = document.getElementById("next-btn");
-const playBtn = document.getElementById("play-btn");
-const pauseBtn = document.getElementById("pause-btn");
+function rgba([r,g,b],a){return`rgba(${r},${g},${b},${a})`;}
+function drawSky(){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,rgba([TINT[0],TINT[1],TINT[2]+10],1));
+  g.addColorStop(1,'#000');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+}
+function city(){
+  ctx.fillStyle='rgba(15,22,28,1)';
+  for(let i=0;i<18;i++){ const bw=60+Math.random()*140, bh=120+Math.random()*380, x=Math.random()*(W+bw)-bw, y=H-220-Math.random()*180; ctx.fillRect(x,y-bh,bw,bh); }
+  ctx.fillStyle='rgba(20,28,36,1)';
+  for(let i=0;i<12;i++){ const bw=80+Math.random()*180, bh=180+Math.random()*440, x=Math.random()*(W+bw)-bw, y=H-140-Math.random()*80; ctx.fillRect(x,y-bh,bw,bh); }
+  for(let i=0;i<260;i++){ const x=Math.random()*W, y=140+Math.random()*(H-260); if(Math.random()>.35){ ctx.fillStyle='rgba(255,164,60,.9)'; ctx.fillRect(x,y,3,7); } }
+}
+function hood(){
+  ctx.save(); ctx.translate(W*0.52,H*0.62);
+  ctx.fillStyle='rgba(10,12,14,.95)';
+  ctx.beginPath(); ctx.moveTo(-180,180); ctx.quadraticCurveTo(-200,40,-80,-40); ctx.quadraticCurveTo(0,-80,80,-40); ctx.quadraticCurveTo(200,40,180,180); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(0,-90,70,80,0,0,Math.PI*2); ctx.fill();
+  ctx.shadowColor=rgba(teal,0.9); ctx.shadowBlur=40; ctx.fillStyle=rgba(teal,0.85);
+  ctx.beginPath(); ctx.ellipse(140,40,28,36,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+function title(ep,scene,sub){
+  ctx.save(); ctx.shadowColor=rgba(orange,0.9); ctx.shadowBlur=28; ctx.fillStyle=rgba(orange,0.95); ctx.font='900 160px system-ui,Segoe UI,Inter,Arial'; ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText('GRIFF',70,40); ctx.restore();
+  ctx.save(); ctx.shadowColor=rgba(teal,0.9); ctx.shadowBlur=26; ctx.fillStyle=rgba(teal,0.95); ctx.font='900 96px system-ui,Segoe UI,Inter,Arial'; ctx.fillText('IS BACK',75,170); ctx.restore();
+  ctx.fillStyle='rgba(14,22,28,.9)'; ctx.fillRect(W-360,110,300,64);
+  ctx.fillStyle='rgba(220,230,235,.95)'; ctx.font='700 30px system-ui,Segoe UI,Inter,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  const tag = scene===1 ? 'WILMINGTON  DELAWARE' : `EP 1  •  SCENE ${scene}`;
+  ctx.fillText(tag,W-360+150,110+32);
+  if(sub){ ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.font='600 42px system-ui,Segoe UI,Inter,Arial'; ctx.fillStyle='rgba(240,240,240,.95)'; ctx.shadowColor='rgba(0,0,0,.65)'; ctx.shadowBlur=16; ctx.fillText(sub,W/2,H-28); ctx.shadowBlur=0; }
+}
+function speck(){ for(let i=0;i<240;i++){ const x=Math.random()*W,y=Math.random()*H*.65; const c=Math.random()<.5?teal:orange; ctx.fillStyle=`rgba(${c[0]},${c[1]},${c[2]},${Math.random()*.8})`; ctx.fillRect(x,y,2,2+Math.random()*3);} }
+function vignette(){ const g=ctx.createRadialGradient(W/2,H/2,H*.2,W/2,H/2,H*.8); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.55)'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
 
-function showScene(i) {
-  imgEl.src = scenes[i].img;
-  capEl.textContent = scenes[i].text;
+function makeScene(sceneIdx){
+  drawSky(); city(); hood(); speck(); title(1, sceneIdx+1, CAPTIONS[sceneIdx]); vignette();
+  return cvs.toDataURL('image/png');
 }
 
-prevBtn.addEventListener("click", () => {
-  index = (index - 1 + scenes.length) % scenes.length;
-  showScene(index);
-});
+/* ===== SIMPLE PLAYER ===== */
+const frame=document.getElementById('frame');
+const cap=document.getElementById('cap');
+const bar=document.getElementById('bar');
+const btnPrev=document.getElementById('prev');
+const btnNext=document.getElementById('next');
+const btnPlay=document.getElementById('play');
+const btnPause=document.getElementById('pause');
 
-nextBtn.addEventListener("click", () => {
-  index = (index + 1) % scenes.length;
-  showScene(index);
-});
+let i=0, t=null;
 
-playBtn.addEventListener("click", () => {
-  clearInterval(autoPlay);
-  autoPlay = setInterval(() => {
-    index = (index + 1) % scenes.length;
-    showScene(index);
-  }, 4000); // change scene every 4 seconds
-});
-
-pauseBtn.addEventListener("click", () => {
-  clearInterval(autoPlay);
-});
-
-showScene(index);
+function render(){
+  const url = makeScene(i);
+  frame.classList.remove('active');
+  frame.onload = ()=> frame.classList.add('active');
+  frame.src = url;
+  cap.textContent = CAPTIONS[i] || '';
+  bar.style.width = ((i+1)/CAPTIONS.length*100).toFixed(2)+'%';
+}
+btnPrev.onclick = ()=>{ i=(i-1+CAPTIONS.length)%CAPTIONS.length; render(); };
+btnNext.onclick = ()=>{ i=(i+1)%CAPTIONS.length; render(); };
+btnPlay.onclick = ()=>{ clearInterval(t); t=setInterval(()=>{ i=(i+1)%CAPTIONS.length; render(); }, 5000); };
+btnPause.onclick= ()=>{ clearInterval(t); };
+render();
 </script>
-
 </body>
 </html>
