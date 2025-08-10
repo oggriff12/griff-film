@@ -3,30 +3,70 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>GRIFF IS BACK — Episodes</title>
+  <title>GRIFF IS BACK — The Series</title>
   <link rel="stylesheet" href="style.css"/>
-  <!-- Netlify Identity Widget -->
+  <!-- Netlify Identity -->
   <script defer src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
-  <header class="hero">
-    <div class="hero-inner">
-      <h1>🎬 GRIFF IS BACK</h1>
-      <p>Authentic. Gritty. Real. Log in to watch.</p>
-      <div class="hero-actions">
-        <button id="login-btn">Sign In / Sign Up</button>
-        <button id="logout-btn" class="secondary hidden">Log Out</button>
+  <!-- Nav -->
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="logo-dot"></div>
+        <span>Griff<span class="accent">IsBack</span></span>
       </div>
-      <div id="user-badge" class="hidden"></div>
+      <nav class="menu">
+        <a href="#" class="active">Home</a>
+        <a href="#" id="menu-episodes">Episodes</a>
+        <a href="#" id="menu-characters">Characters</a>
+      </nav>
+      <div class="auth">
+        <button id="login-btn">Sign In / Up</button>
+        <button id="logout-btn" class="secondary hidden">Log Out</button>
+        <div id="user-badge" class="hidden"></div>
+      </div>
     </div>
   </header>
 
+  <!-- Hero Carousel -->
+  <section class="hero">
+    <div class="hero-slide" id="hero-slide">
+      <img id="hero-img" alt="Featured"/>
+      <div class="hero-overlay"></div>
+      <div class="hero-copy">
+        <h1>GRIFF IS BACK</h1>
+        <p>Authentic. Gritty. Real. A street‑born story of loss, love, and survival.</p>
+        <div class="hero-actions">
+          <button id="hero-play">▶ Play All</button>
+          <button id="hero-ep1" class="secondary">Episode 1</button>
+        </div>
+      </div>
+    </div>
+    <div class="hero-dots" id="hero-dots"></div>
+  </section>
+
   <main class="container">
-    <h2>Episodes</h2>
-    <div id="episodes-grid" class="grid"></div>
+    <!-- Featured row -->
+    <section class="row">
+      <h2>Featured</h2>
+      <div id="row-featured" class="cards scroll"></div>
+    </section>
+
+    <!-- New Episodes -->
+    <section class="row">
+      <h2>New Episodes</h2>
+      <div id="row-episodes" class="cards scroll"></div>
+    </section>
+
+    <!-- Characters row (shows only if images exist) -->
+    <section class="row" id="row-characters-wrap" style="display:none;">
+      <h2>Characters</h2>
+      <div id="row-characters" class="cards scroll"></div>
+    </section>
   </main>
 
-  <!-- Player overlay -->
+  <!-- Player Overlay -->
   <section id="slideshow" class="overlay hidden">
     <div id="preloader">Loading…</div>
     <img id="slide" class="slide" alt="scene"/>
@@ -38,10 +78,10 @@
     </div>
   </section>
 
-  <!-- BG music (optional) -->
+  <!-- BG music -->
   <audio id="bg-music" src="assets/music.mp3" loop preload="auto"></audio>
 
-  <!-- Tap-to-play overlay for iPhone audio -->
+  <!-- Tap‑to‑play (mobile audio) -->
   <div id="tap-to-play" class="overlay hidden">
     <div class="card">
       <h2>🔊 Tap to Start with Sound</h2>
@@ -50,29 +90,28 @@
   </div>
 
   <script src="animation.js"></script>
+
+  <!-- Identity UI wiring -->
   <script>
-    // Netlify Identity login flow
     const loginBtn  = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout-btn');
     const userBadge = document.getElementById('user-badge');
 
     function setAuthed(user){
-      const loggedIn = !!user;
-      loginBtn.classList.toggle('hidden', loggedIn);
-      logoutBtn.classList.toggle('hidden', !loggedIn);
-      userBadge.classList.toggle('hidden', !loggedIn);
-      if (loggedIn) userBadge.textContent = "Logged in as: " + (user.user_metadata?.full_name || user.email);
+      const logged = !!user;
+      loginBtn.classList.toggle('hidden', logged);
+      logoutBtn.classList.toggle('hidden', !logged);
+      userBadge.classList.toggle('hidden', !logged);
+      if (logged) userBadge.textContent = (user.user_metadata?.full_name || user.email);
     }
-
     document.addEventListener('DOMContentLoaded', () => {
       if (window.netlifyIdentity) {
-        window.netlifyIdentity.on('init', user => setAuthed(user));
-        window.netlifyIdentity.on('login', user => { setAuthed(user); window.netlifyIdentity.close(); });
+        window.netlifyIdentity.on('init', setAuthed);
+        window.netlifyIdentity.on('login', u => { setAuthed(u); window.netlifyIdentity.close(); });
         window.netlifyIdentity.on('logout', () => setAuthed(null));
         window.netlifyIdentity.init();
       }
     });
-
     loginBtn.onclick  = () => window.netlifyIdentity && window.netlifyIdentity.open('login');
     logoutBtn.onclick = () => window.netlifyIdentity && window.netlifyIdentity.logout();
   </script>
