@@ -9,6 +9,9 @@
   <script defer src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
+  <!-- BG music (starts muted; user can toggle) -->
+  <audio id="bg-music" src="assets/music.mp3" loop preload="auto" muted playsinline></audio>
+
   <!-- Nav -->
   <header class="nav">
     <div class="nav-inner">
@@ -22,6 +25,7 @@
         <a href="#" id="menu-characters">Characters</a>
       </nav>
       <div class="auth">
+        <button id="sound-toggle" class="secondary">Sound: Off</button>
         <button id="login-btn">Sign In / Up</button>
         <button id="logout-btn" class="secondary hidden">Log Out</button>
         <div id="user-badge" class="hidden"></div>
@@ -78,19 +82,9 @@
     </div>
   </section>
 
-  <!-- BG music -->
-  <audio id="bg-music" src="assets/music.mp3" loop preload="auto" muted playsinline></audio>
-  <!-- Tap‑to‑play (mobile audio) -->
-  <div id="tap-to-play" class="overlay hidden">
-    <div class="card">
-      <h2>🔊 Tap to Start with Sound</h2>
-      <button id="enable-audio">Play</button>
-    </div>
-  </div>
-
   <script src="animation.js"></script>
 
-  <!-- Identity UI wiring -->
+  <!-- Netlify Identity wiring -->
   <script>
     const loginBtn  = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout-btn');
