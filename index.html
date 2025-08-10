@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GRIFF IS BACK — The Animated Series</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <audio id="bg-music" src="assets/music.mp3" loop preload="auto"></audio>
+  <div id="tap-to-play" class="overlay hidden">
+    <div class="card">
+      <h2>🔊 Tap to Start with Sound</h2>
+      <button id="enable-audio">Play</button>
+    </div>
+  </div>
+  <main id="menu">
+    <h1>🎬 GRIFF IS BACK</h1>
+    <p class="sub">Select an episode or hit ▶ Play All</p>
+    <div class="actions">
+      <button id="play-all">▶ Play All (Ep 1 → 10)</button>
+    </div>
+    <div id="episode-buttons" class="grid"></div>
+    <p class="hint">Tip: Turn your phone sideways for full screen.</p>
+  </main>
+  <section id="slideshow" class="hidden">
+    <div id="preloader">Loading…</div>
+    <img id="slide" class="slide" alt="scene" />
+    <div id="caption"></div>
+    <div id="hud">
+      <button id="back-button">← Episodes</button>
+      <div id="ep-label"></div>
+      <button id="pause-toggle">⏸</button>
+    </div>
+  </section>
+  <script src="animation.js"></script>
+</body>
+</html>
