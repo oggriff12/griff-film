@@ -1,21 +1,20 @@
-/***************
-  CONFIG
-***************/
-const SLIDE_MS = 15000;           // slide duration
-const EXT = "png";                // change to "jpg" if your files are jpg
-const EP_COUNTS = {1:7,2:7,3:7,4:6,5:6,6:6,7:6,8:6,9:6,10:6};
+/************************
+ * GRIFF IS BACK — animation.js (Hulu-style hub + auth + non-blocking audio)
+ ************************/
 
-// Short captions demo (fill out more later if you want)
+/* ===== CONFIG ===== */
+const SLIDE_MS = 15000;          // ms per slide
+const EXT = "png";               // change to "jpg" if your files are jpg
+const EP_COUNTS = {1:7,2:7,3:7,4:6,5:6,6:6,7:6,8:6,9:6,10:6};
+const HERO_EPISODES = [1,2,3,4,5]; // hero uses epX-1 as background
+
+// Short demo captions (fill more later)
 const CAPTIONS = {
   1:["Wilmington — blood on bricks.","More funerals than birthdays.","He walks alone, notebook tight.","Bus to Maryland.","Kevin the mechanic.","If the streets made me…","…maybe I can unmake myself."],
-  2:["LA — masks on masks.","Trap vibes, bad friends.","Venice: Tariq returns.","Studio nights, pain fuels.","Open mic calling.","Buzz grows.","The voice gets loud."],
+  2:["LA — masks on masks.","Trap vibes, bad friends.","Venice: Tariq returns.","Studio nights, pain fuels.","Open mic calling.","Buzz grows.","The voice gets loud."]
 };
 
-const HERO_EPISODES = [1,2,3,4,5]; // hero carousel picks epX-1 as background
-
-/***************
-  DOM
-***************/
+/* ===== DOM ===== */
 const gridEpisodes = document.getElementById('row-episodes');
 const gridFeatured = document.getElementById('row-featured');
 const charsWrap    = document.getElementById('row-characters-wrap');
@@ -34,11 +33,11 @@ const backBtn  = document.getElementById('back-button');
 const pauseBtn = document.getElementById('pause-toggle');
 const preloader= document.getElementById('preloader');
 
-const audio    = document.getElementById('bg-music');
+const audio      = document.getElementById('bg-music');
 const tapOverlay = document.getElementById('tap-to-play');
 const enableAudio= document.getElementById('enable-audio');
 
-// menu anchors (optional)
+/* ===== NAV anchors (optional) ===== */
 document.getElementById('menu-episodes')?.addEventListener('click', e=>{
   e.preventDefault(); document.querySelector('.row:nth-of-type(2)')?.scrollIntoView({behavior:'smooth'});
 });
@@ -46,24 +45,17 @@ document.getElementById('menu-characters')?.addEventListener('click', e=>{
   e.preventDefault(); document.getElementById('row-characters-wrap')?.scrollIntoView({behavior:'smooth'});
 });
 
-/***************
-  AUTH
-***************/
+/* ===== AUTH ===== */
 function isAuthed(){ return window.netlifyIdentity && window.netlifyIdentity.currentUser(); }
 function requireAuth(fn){ return (...args)=>{ if(!isAuthed()){ window.netlifyIdentity?.open('login'); return; } fn(...args); }; }
 
-/***************
-  UTILS
-***************/
+/* ===== UTILS ===== */
 function slidePath(ep, i){ return `assets/ep${ep}-${i}.${EXT}`; }
 function imgExists(src){ return new Promise(res=>{ const im=new Image(); im.onload=()=>res(true); im.onerror=()=>res(false); im.src=src; }); }
 
-/***************
-  HERO CAROUSEL
-***************/
+/* ===== HERO CAROUSEL ===== */
 let heroIdx = 0, heroTimer=null;
 async function buildHero(){
-  // build dots
   heroDots.innerHTML = '';
   HERO_EPISODES.forEach((_,i)=>{
     const dot=document.createElement('div');
@@ -78,20 +70,16 @@ async function buildHero(){
   heroPlay.onclick = requireAuth(()=> startEpisode(1,true));
   heroEp1.onclick  = requireAuth(()=> startEpisode(1,false));
 }
-
 async function showHero(idx, stopAuto=false){
   heroIdx = idx;
   const ep = HERO_EPISODES[idx];
   const src = slidePath(ep,1);
-  const ok = await imgExists(src);
-  heroImg.src = ok ? src : '';
+  heroImg.src = (await imgExists(src)) ? src : '';
   [...heroDots.children].forEach((d,i)=>d.classList.toggle('active', i===idx));
   if (stopAuto && heroTimer){ clearInterval(heroTimer); heroTimer=null; }
 }
 
-/***************
-  ROWS
-***************/
+/* ===== ROWS ===== */
 function card(ep){
   const el=document.createElement('div');
   el.className='card';
@@ -108,18 +96,18 @@ function card(ep){
   `;
   const img = el.querySelector('img');
   img.src = slidePath(ep,1);
-  img.onerror = ()=> el.remove(); // hide if missing
+  img.onerror = ()=> el.remove(); // hide card if thumbnail missing
   el.querySelector('.watch').onclick  = requireAuth(()=> startEpisode(ep,false));
   el.querySelector('.playall').onclick= requireAuth(()=> startEpisode(ep,true));
   return el;
 }
-
 async function buildRows(){
   // Featured: 1–5
   for(let ep of [1,2,3,4,5]) gridFeatured.appendChild(card(ep));
   // Episodes: 1–10
   for(let ep=1; ep<=10; ep++) gridEpisodes.appendChild(card(ep));
-  // Characters (will show only if images exist)
+
+  // Characters section (only shows if files exist)
   const chars = [
     {name:'Griff',   src:'assets/char-griff.png'},
     {name:'Syleste', src:'assets/char-syleste.png'},
@@ -143,12 +131,10 @@ async function buildRows(){
       gridChars.appendChild(el); shown++;
     }
   }
-  if (shown>0) document.getElementById('row-characters-wrap').style.display='';
+  if (shown>0) charsWrap.style.display='';
 }
 
-/***************
-  PLAYER
-***************/
+/* ===== PLAYER ===== */
 let currentEp=1, currentSlide=0, timer=null, paused=false, playAllChain=false;
 
 function startEpisode(ep, chain){
@@ -157,13 +143,11 @@ function startEpisode(ep, chain){
   player.classList.remove('hidden');
   loadSlide(true);
 }
-
 function nextEpisode(){
-  if (!playAllChain){ return backToHub(); }
+  if (!playAllChain) return backToHub();
   if (currentEp < 10) startEpisode(currentEp+1, true);
   else backToHub();
 }
-
 function backToHub(){ stop(); player.classList.add('hidden'); }
 backBtn.onclick = backToHub;
 
@@ -202,20 +186,47 @@ function loadSlide(initial){
   im.src=src;
 }
 
-/***************
-  AUDIO (mobile unlock)
-***************/
-async function tryAutoplay(){
-  try{ await audio.play(); }
-  catch{ tapOverlay.classList.remove('hidden'); }
-}
-enableAudio?.addEventListener('click', async ()=>{ try{ await audio.play(); }catch{} tapOverlay.classList.add('hidden'); });
+/* ===== NON-BLOCKING AUDIO (overlay never traps) ===== */
+let audioUnlocked = false;
 
-/***************
-  INIT
-***************/
+async function tryStartMuted(){
+  try {
+    audio.muted = true;       // start muted for autoplay policies
+    await audio.play();       // attempt silent autoplay
+  } catch { /* ignore */ }
+}
+document.addEventListener('DOMContentLoaded', tryStartMuted);
+
+async function unlockAudio(){
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  tapOverlay?.classList.add('hidden');  // always hide overlay
+  try {
+    audio.muted = false;
+    await audio.play();
+  } catch {
+    // fallback: stay muted but keep UI unblocked
+    audio.muted = true;
+    try { await audio.play(); } catch {}
+  }
+}
+enableAudio?.addEventListener('click', unlockAudio);
+// Also unlock on any interaction so homepage is never blocked
+['click','touchstart','keydown'].forEach(evt =>
+  window.addEventListener(evt, unlockAudio, { once:true, passive:true })
+);
+
+// Only show overlay on iOS Safari (and it still dismisses on any tap)
+function isIOS(){ return /iPad|iPhone|iPod/.test(navigator.userAgent); }
+function isSafari(){ return /^((?!chrome|android).)*safari/i.test(navigator.userAgent); }
+document.addEventListener('DOMContentLoaded', ()=>{
+  const shouldShow = isIOS() && isSafari();
+  if (!shouldShow) tapOverlay?.classList.add('hidden');
+  // if it is iOS Safari, overlay is visible but any tap unlocks & hides
+});
+
+/* ===== INIT ===== */
 document.addEventListener('DOMContentLoaded', async ()=>{
   await buildHero();
   await buildRows();
-  tryAutoplay();
 });
