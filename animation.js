@@ -1,7 +1,7 @@
 /************************
  * GRIFF IS BACK — animation.js
- * Code-only cinematic images (poster vibe), Hulu-style hub,
- * Netlify Identity gate, non-blocking audio + sound toggle
+ * Code-only cinematic images, Hulu-style hub, auth,
+ * non-blocking audio + sound toggle, overlay show/hide fix
  ************************/
 
 /* ===== CONFIG ===== */
@@ -49,9 +49,7 @@ document.getElementById('menu-characters')?.addEventListener('click', e=>{
 function isAuthed(){ return window.netlifyIdentity && window.netlifyIdentity.currentUser(); }
 function requireAuth(fn){ return (...args)=>{ if(!isAuthed()){ window.netlifyIdentity?.open('login'); return; } fn(...args); }; }
 
-/* =========================================================
-   CODE-ONLY CINEMATIC GENERATOR (Poster-style like your intro)
-   ========================================================= */
+/* ============== CODE-ONLY CINEMATIC GENERATOR ============== */
 const W = 1600, H = 900; // 16:9
 const teal   = [0, 230, 208];
 const orange = [255, 106, 0];
@@ -76,9 +74,7 @@ function drawGradientSky(tint){
   ctx.fillStyle = g;
   ctx.fillRect(0,0,W,H);
 }
-
 function drawCityline(){
-  // distant blocks
   ctx.fillStyle = 'rgba(15,22,28,1)';
   for(let i=0;i<18;i++){
     const bw = 60 + Math.random()*140;
@@ -87,7 +83,6 @@ function drawCityline(){
     const y  = H-220 - Math.random()*180;
     ctx.fillRect(x, y-bh, bw, bh);
   }
-  // near blocks
   ctx.fillStyle = 'rgba(20,28,36,1)';
   for(let i=0;i<12;i++){
     const bw = 80 + Math.random()*180;
@@ -96,7 +91,6 @@ function drawCityline(){
     const y  = H-140 - Math.random()*80;
     ctx.fillRect(x, y-bh, bw, bh);
   }
-  // windows
   for(let i=0;i<280;i++){
     const x = Math.random()*W;
     const y = 140 + Math.random()*(H-260);
@@ -105,31 +99,22 @@ function drawCityline(){
     if(on) ctx.fillRect(x, y, 3, 7);
   }
 }
-
 function drawHoodedSilhouette(){
   ctx.save();
   ctx.translate(W*0.52, H*0.62);
-  ctx.scale(1,1);
-  // body
   ctx.fillStyle='rgba(10,12,14,.95)';
   ctx.beginPath();
   ctx.moveTo(-180,180); ctx.quadraticCurveTo(-200,40,-80,-40);
   ctx.quadraticCurveTo(0,-80,80,-40);
   ctx.quadraticCurveTo(200,40,180,180);
   ctx.closePath(); ctx.fill();
-  // head
-  ctx.beginPath();
-  ctx.ellipse(0,-90,70,80,0,0,Math.PI*2);
-  ctx.fill();
-  // glow fist (right)
+  ctx.beginPath(); ctx.ellipse(0,-90,70,80,0,0,Math.PI*2); ctx.fill();
   ctx.shadowColor=rgba(teal,0.9); ctx.shadowBlur=40;
   ctx.fillStyle=rgba(teal,0.85);
   ctx.beginPath(); ctx.ellipse(140,40,28,36,0,0,Math.PI*2); ctx.fill();
   ctx.restore();
 }
-
 function drawNeonTitle(ep, scene, subtitle){
-  // orange "GRIFF"
   ctx.save();
   ctx.shadowColor=rgba(orange,0.9); ctx.shadowBlur=28;
   ctx.fillStyle=rgba(orange,0.95);
@@ -137,16 +122,12 @@ function drawNeonTitle(ep, scene, subtitle){
   ctx.textAlign='left'; ctx.textBaseline='top';
   ctx.fillText('GRIFF', 70, 40);
   ctx.restore();
-
-  // teal "IS BACK"
   ctx.save();
   ctx.shadowColor=rgba(teal,0.9); ctx.shadowBlur=26;
   ctx.fillStyle=rgba(teal,0.95);
   ctx.font='900 96px system-ui,Segoe UI,Inter,Arial';
   ctx.fillText('IS BACK', 75, 170);
   ctx.restore();
-
-  // episode tag plaque (like “Wilmington, Delaware”)
   ctx.fillStyle='rgba(14,22,28,.9)';
   ctx.fillRect(W-360, 110, 300, 64);
   ctx.fillStyle='rgba(220,230,235,.95)';
@@ -154,8 +135,6 @@ function drawNeonTitle(ep, scene, subtitle){
   const tag = (ep===1? 'WILMINGTON  DELAWARE' : `EP ${ep}  •  SCENE ${scene}`);
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText(tag, W-360+150, 110+32);
-
-  // subtitle/caption (bottom)
   ctx.textAlign='center'; ctx.textBaseline='bottom';
   ctx.font='600 42px system-ui,Segoe UI,Inter,Arial';
   ctx.fillStyle='rgba(240,240,240,.95)';
@@ -163,23 +142,20 @@ function drawNeonTitle(ep, scene, subtitle){
   if (subtitle) ctx.fillText(subtitle, W/2, H-28);
   ctx.shadowBlur=0;
 }
-
 function addSpeckles(){
   for(let i=0;i<260;i++){
     const x = Math.random()*W, y = Math.random()*H*0.65;
     const c = Math.random()<.5 ? teal : orange;
-    ctx.fillStyle = rgba(c, Math.random()*.8);
+    ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${Math.random()*.8})`;
     ctx.fillRect(x, y, 2, 2+Math.random()*3);
   }
 }
-
 function addVignette(){
   const g = ctx.createRadialGradient(W/2,H/2, H*0.2, W/2,H/2, H*0.8);
   g.addColorStop(0,'rgba(0,0,0,0)');
   g.addColorStop(1,'rgba(0,0,0,.55)');
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
 }
-
 function generateSlide(ep, scene, subtitle=''){
   const tint = EP_TINTS[ep] || [18,28,36];
   drawGradientSky(tint);
@@ -190,7 +166,6 @@ function generateSlide(ep, scene, subtitle=''){
   addVignette();
   return canvas.toDataURL('image/png');
 }
-
 function genThumb(ep){ return generateSlide(ep, 1, '— Thumbnail —'); }
 
 /* ===== HERO CAROUSEL ===== */
@@ -206,7 +181,6 @@ function buildHero(){
   showHero(0);
   if(heroTimer) clearInterval(heroTimer);
   heroTimer = setInterval(()=> showHero((heroIdx+1)%HERO_EPISODES.length), 6000);
-
   heroPlay.onclick = requireAuth(()=> startEpisode(1,true));
   heroEp1.onclick  = requireAuth(()=> startEpisode(1,false));
 }
@@ -241,8 +215,6 @@ function card(ep){
 function buildRows(){
   for(let ep of [1,2,3,4,5]) gridFeatured.appendChild(card(ep));
   for(let ep=1; ep<=10; ep++) gridEpisodes.appendChild(card(ep));
-
-  // Characters row (code portraits)
   const CHAR_CARDS = [
     {name:'Griff',   ep:1},
     {name:'Syleste', ep:7},
@@ -274,7 +246,7 @@ let currentEp=1, currentSlide=0, timer=null, paused=false, playAllChain=false;
 function startEpisode(ep, chain){
   currentEp=ep; currentSlide=1; playAllChain=chain;
   paused=false; pauseBtn.textContent='⏸';
-  player.classList.remove('hidden');
+  player.classList.add('show');        // SHOW overlay
   loadSlide(true);
 }
 function nextEpisode(){
@@ -282,14 +254,13 @@ function nextEpisode(){
   if (currentEp < 10) startEpisode(currentEp+1, true);
   else backToHub();
 }
-function backToHub(){ stop(); player.classList.add('hidden'); }
+function backToHub(){ stop(); player.classList.remove('show'); } // HIDE overlay
 backBtn.onclick = backToHub;
 
 pauseBtn.onclick = ()=>{
   if(!paused){ clearInterval(timer); paused=true; pauseBtn.textContent='▶'; }
   else{ paused=false; scheduleNext(); pauseBtn.textContent='⏸'; }
 };
-
 function stop(){ clearInterval(timer); timer=null; }
 function scheduleNext(){ stop(); timer=setInterval(()=>loadSlide(false), SLIDE_MS); }
 
@@ -302,16 +273,13 @@ function loadSlide(initial){
   epLabel.textContent=`Episode ${currentEp} • Scene ${currentSlide}/${total}`;
   slideImg.classList.remove('active');
   slideImg.style.transform='scale(1.08) translateZ(0)';
-
   const subtitle = (CAPTIONS[currentEp]||[])[currentSlide-1] || '';
   const dataUrl = generateSlide(currentEp, currentSlide, subtitle);
-
   slideImg.src = dataUrl;
-  slideImg.offsetHeight;                  // force reflow for transition
+  slideImg.offsetHeight;
   slideImg.classList.add('active');
   slideImg.style.transform='scale(1.02) translateZ(0)';
   preloader.style.opacity=0;
-
   captionEl.textContent = subtitle;
   if (initial) scheduleNext();
   currentSlide++;
