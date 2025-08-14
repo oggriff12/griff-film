@@ -2,130 +2,134 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Griff Is Back — Episode 1</title>
-<link rel="stylesheet" href="style.css"/>
+<link rel="stylesheet" href="style.css" />
 <style>
-  body{background:#000;color:#fff;margin:0;font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif}
-  .ep-wrap{max-width:1100px;margin:0 auto;padding:16px}
-  .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
-  .title{font-weight:800;font-size:clamp(20px,3.5vw,32px)}
+  :root{--teal:#00e6d0;--orange:#ff6a00}
+  body{margin:0;background:#000;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0 12px}
+  .title{font-weight:800;font-size:clamp(20px,3.6vw,32px)}
   .back{background:#151515;border:1px solid #2a2a2a;color:#ddd;border-radius:10px;padding:8px 12px;text-decoration:none}
   .stage{position:relative;aspect-ratio:16/9;background:#070707;border:1px solid #161616;border-radius:14px;overflow:hidden}
-  .stage img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transform:scale(1.06);transition:opacity 1s ease, transform 8s ease}
-  .stage img.active{opacity:1;transform:scale(1.02)}
-  .caption{margin:10px 2px 0;font-size:clamp(16px,2.2vw,22px);text-align:center;opacity:.95}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin:14px 0}
-  .controls button{background:linear-gradient(135deg,#ff6a00,#ff9a2b);border:none;border-radius:10px;color:#111;font-weight:800;padding:10px 14px;cursor:pointer}
-  .controls button.secondary{background:#151515;color:#ddd;border:1px solid #2a2a2a}
+  .frame{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.06);transition:opacity 1s ease,transform 10s ease}
+  .frame.show{opacity:1;transform:scale(1.02)}
+  .caption{position:absolute;left:0;right:0;bottom:14px;margin:auto;max-width:min(920px,92%);text-align:center;font-size:clamp(16px,2.2vw,22px);line-height:1.35;text-shadow:0 2px 24px #000,0 0 6px rgba(0,0,0,.6)}
+  .hud{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin:14px 0 8px}
+  .hud button{background:linear-gradient(135deg,var(--orange),#ff9a2b);border:none;border-radius:10px;color:#111;font-weight:800;padding:10px 14px;cursor:pointer}
+  .hud button.secondary{background:#151515;color:#ddd;border:1px solid #2a2a2a}
   .progress{height:8px;background:#111;border:1px solid #222;border-radius:999px;overflow:hidden}
-  .bar{height:100%;width:0;background:#00e6d0}
+  .bar{height:100%;width:0;background:var(--teal);transition:width .25s ease}
+  .hint{opacity:.72;text-align:center;margin-top:6px}
 </style>
 </head>
 <body>
-<div class="ep-wrap">
+<div class="wrap">
   <div class="topbar">
     <div class="title">Episode 1: Back Where It Started</div>
     <a class="back" href="index.html">← Back to Home</a>
   </div>
 
   <div class="stage">
-    <img id="frame" alt="scene"/>
+    <img id="imgA" class="frame" alt="scene"/>
+    <img id="imgB" class="frame" alt="scene"/>
+    <div id="cap" class="caption"></div>
   </div>
 
-  <div id="cap" class="caption"></div>
-
-  <div class="controls">
+  <div class="hud">
     <button id="prev">⏮ Prev</button>
     <button id="play">▶ Play</button>
     <button id="pause" class="secondary">⏸ Pause</button>
     <button id="next">⏭ Next</button>
   </div>
-
   <div class="progress"><div id="bar" class="bar"></div></div>
+  <div class="hint">Tap Play once if you don’t hear voices (browser permission).</div>
 </div>
 
+<!-- Injected images as code (full base64) -->
+<script src="episode1_images.js"></script>
 <script>
-/* ===== EPISODE 1 SCRIPT (from your outline) ===== */
-const CAPTIONS = [
-  "They say the place you start… shapes the man you become.",
-  "For me, that place was Delaware. Wilmington. Blood on bricks. Pain in the pavement.",
-  "By 17, I had more funerals than birthdays. I wasn’t living, just breathing.",
-  "I left for Maryland with $40 in my pocket… and met Kevin, the redneck mechanic with a big heart.",
-  "He taught me how to fix cars, talk to country girls, and breathe without watching my back.",
-  "But the city kept calling. I chased LA.",
-  "The glamour faded fast — couches, fake friends, and smoke chasing peace."
-];
-
-/* ===== POSTER-STYLE IMAGE GENERATOR (matching your intro vibe) ===== */
-const W=1600,H=900, teal=[0,230,208], orange=[255,106,0];
-const TINT=[18,28,36];
-const cvs=document.createElement('canvas'); cvs.width=W;cvs.height=H; const ctx=cvs.getContext('2d');
-
-function rgba([r,g,b],a){return`rgba(${r},${g},${b},${a})`;}
-function drawSky(){
-  const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,rgba([TINT[0],TINT[1],TINT[2]+10],1));
-  g.addColorStop(1,'#000');
-  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-}
-function city(){
-  ctx.fillStyle='rgba(15,22,28,1)';
-  for(let i=0;i<18;i++){ const bw=60+Math.random()*140, bh=120+Math.random()*380, x=Math.random()*(W+bw)-bw, y=H-220-Math.random()*180; ctx.fillRect(x,y-bh,bw,bh); }
-  ctx.fillStyle='rgba(20,28,36,1)';
-  for(let i=0;i<12;i++){ const bw=80+Math.random()*180, bh=180+Math.random()*440, x=Math.random()*(W+bw)-bw, y=H-140-Math.random()*80; ctx.fillRect(x,y-bh,bw,bh); }
-  for(let i=0;i<260;i++){ const x=Math.random()*W, y=140+Math.random()*(H-260); if(Math.random()>.35){ ctx.fillStyle='rgba(255,164,60,.9)'; ctx.fillRect(x,y,3,7); } }
-}
-function hood(){
-  ctx.save(); ctx.translate(W*0.52,H*0.62);
-  ctx.fillStyle='rgba(10,12,14,.95)';
+/* ========= Fallback generator in case any image var is missing ========= */
+function genSlide(ep=1, scene=1, subtitle=""){
+  const W=1600,H=900, cvs=document.createElement('canvas'); cvs.width=W;cvs.height=H; const ctx=cvs.getContext('2d');
+  const teal=[0,230,208], orange=[255,106,0], tint=[18,28,36];
+  const rgba=(r,g,b,a)=>`rgba(${r},${g},${b},${a})`;
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,rgba(tint[0],tint[1],tint[2]+10,1)); g.addColorStop(1,'#000'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(15,22,28,1)'; for(let i=0;i<18;i++){const bw=60+Math.random()*140,bh=120+Math.random()*380,x=Math.random()*(W+bw)-bw,y=H-220-Math.random()*180;ctx.fillRect(x,y-bh,bw,bh);}
+  ctx.fillStyle='rgba(20,28,36,1)'; for(let i=0;i<12;i++){const bw=80+Math.random()*180,bh=180+Math.random()*440,x=Math.random()*(W+bw)-bw,y=H-140-Math.random()*80;ctx.fillRect(x,y-bh,bw,bh);}
+  for(let i=0;i<240;i++){const x=Math.random()*W,y=140+Math.random()*(H-260); if(Math.random()>.35){ctx.fillStyle='rgba(255,164,60,.9)'; ctx.fillRect(x,y,3,7);}}
+  ctx.save(); ctx.translate(W*0.52,H*0.62); ctx.fillStyle='rgba(10,12,14,.95)';
   ctx.beginPath(); ctx.moveTo(-180,180); ctx.quadraticCurveTo(-200,40,-80,-40); ctx.quadraticCurveTo(0,-80,80,-40); ctx.quadraticCurveTo(200,40,180,180); ctx.closePath(); ctx.fill();
   ctx.beginPath(); ctx.ellipse(0,-90,70,80,0,0,Math.PI*2); ctx.fill();
-  ctx.shadowColor=rgba(teal,0.9); ctx.shadowBlur=40; ctx.fillStyle=rgba(teal,0.85);
-  ctx.beginPath(); ctx.ellipse(140,40,28,36,0,0,Math.PI*2); ctx.fill();
-  ctx.restore();
-}
-function title(ep,scene,sub){
-  ctx.save(); ctx.shadowColor=rgba(orange,0.9); ctx.shadowBlur=28; ctx.fillStyle=rgba(orange,0.95); ctx.font='900 160px system-ui,Segoe UI,Inter,Arial'; ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText('GRIFF',70,40); ctx.restore();
-  ctx.save(); ctx.shadowColor=rgba(teal,0.9); ctx.shadowBlur=26; ctx.fillStyle=rgba(teal,0.95); ctx.font='900 96px system-ui,Segoe UI,Inter,Arial'; ctx.fillText('IS BACK',75,170); ctx.restore();
-  ctx.fillStyle='rgba(14,22,28,.9)'; ctx.fillRect(W-360,110,300,64);
-  ctx.fillStyle='rgba(220,230,235,.95)'; ctx.font='700 30px system-ui,Segoe UI,Inter,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
-  const tag = scene===1 ? 'WILMINGTON  DELAWARE' : `EP 1  •  SCENE ${scene}`;
-  ctx.fillText(tag,W-360+150,110+32);
-  if(sub){ ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.font='600 42px system-ui,Segoe UI,Inter,Arial'; ctx.fillStyle='rgba(240,240,240,.95)'; ctx.shadowColor='rgba(0,0,0,.65)'; ctx.shadowBlur=16; ctx.fillText(sub,W/2,H-28); ctx.shadowBlur=0; }
-}
-function speck(){ for(let i=0;i<240;i++){ const x=Math.random()*W,y=Math.random()*H*.65; const c=Math.random()<.5?teal:orange; ctx.fillStyle=`rgba(${c[0]},${c[1]},${c[2]},${Math.random()*.8})`; ctx.fillRect(x,y,2,2+Math.random()*3);} }
-function vignette(){ const g=ctx.createRadialGradient(W/2,H/2,H*.2,W/2,H/2,H*.8); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.55)'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
-
-function makeScene(sceneIdx){
-  drawSky(); city(); hood(); speck(); title(1, sceneIdx+1, CAPTIONS[sceneIdx]); vignette();
+  ctx.shadowColor=rgba(...teal,.9); ctx.shadowBlur=40; ctx.fillStyle=rgba(...teal,.85);
+  ctx.beginPath(); ctx.ellipse(140,40,28,36,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.shadowColor=rgba(...orange,.9); ctx.shadowBlur=28; ctx.fillStyle=rgba(...orange,.95); ctx.font='900 160px system-ui,Segoe UI,Inter,Arial'; ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText('GRIFF',70,40); ctx.restore();
+  ctx.save(); ctx.shadowColor=rgba(...teal,.9); ctx.shadowBlur=26; ctx.fillStyle=rgba(...teal,.95); ctx.font='900 96px system-ui,Segoe UI,Inter,Arial'; ctx.fillText('IS BACK',75,170); ctx.restore();
+  ctx.fillStyle='rgba(14,22,28,.9)'; ctx.fillRect(W-360,110,300,64); ctx.fillStyle='rgba(220,230,235,.95)'; ctx.font='700 30px system-ui,Segoe UI,Inter,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  const tag = scene===1 ? 'WILMINGTON  DELAWARE' : `EP ${ep}  •  SCENE ${scene}`; ctx.fillText(tag,W-360+150,110+32);
+  if(subtitle){ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.font='600 42px system-ui,Segoe UI,Inter,Arial'; ctx.fillStyle='rgba(240,240,240,.95)'; ctx.shadowColor='rgba(0,0,0,.65)'; ctx.shadowBlur=16; ctx.fillText(subtitle,W/2,H-28);}
+  const v=ctx.createRadialGradient(W/2,H/2,H*.2,W/2,H/2,H*.8); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.55)'); ctx.fillStyle=v; ctx.fillRect(0,0,W,H);
   return cvs.toDataURL('image/png');
 }
 
-/* ===== SIMPLE PLAYER ===== */
-const frame=document.getElementById('frame');
-const cap=document.getElementById('cap');
-const bar=document.getElementById('bar');
-const btnPrev=document.getElementById('prev');
-const btnNext=document.getElementById('next');
-const btnPlay=document.getElementById('play');
-const btnPause=document.getElementById('pause');
+/* ========= EPISODE SCENES (now use your injected images) ========= */
+const SCENES = [
+  { who:'Griff',   text:"They say the place you start… shapes the man you become.", img:(typeof IMG_POSTER  !=='undefined' && IMG_POSTER)  || genSlide(1,1,"They say the place you start…") },
+  { who:'Griff',   text:"For me, that place was Delaware. Wilmington. Blood on bricks. Pain in the pavement.", img:(typeof IMG_STREETS !=='undefined' && IMG_STREETS) || genSlide(1,2,"Blood on bricks. Pain in the pavement.") },
+  { who:'Griff',   text:"By 17, I had more funerals than birthdays. I wasn’t living, just breathing.", img: genSlide(1,3,"More funerals than birthdays.") },
+  { who:'Griff',   text:"I left for Maryland with $40 in my pocket… that’s where I met Kevin.", img: genSlide(1,4,"Bus ticket to Maryland.") },
+  { who:'Kevin',   text:"You got hustle in your eyes, boy. You just don’t know what gear to use.", img: genSlide(1,5,"Kevin the mechanic.") },
+  { who:'Griff',   text:"He taught me to fix cars—and breathe without watching my back.", img: genSlide(1,6,"Learning torque and patience.") },
+  { who:'Griff',   text:"But I wanted more. I chased Los Angeles.", img: genSlide(1,7,"Tickets booked — westbound.") },
+  { who:'Griff',   text:"The glamour faded fast—couches, fake friends, and smoke chasing peace.", img:(typeof IMG_SHELTER !=='undefined' && IMG_SHELTER) || genSlide(1,8,"Glamour fades. Survive.") },
+  { who:'Griff',   text:"If the streets made me… maybe I can unmake myself.", img: genSlide(1,9,"If the streets made me…") },
+];
 
-let i=0, t=null;
+/* ========= Player (autoplay after first click) ========= */
+const imgA=document.getElementById('imgA'), imgB=document.getElementById('imgB'), cap=document.getElementById('cap');
+const bar=document.getElementById('bar'), btnPrev=document.getElementById('prev'), btnNext=document.getElementById('next'), btnPlay=document.getElementById('play'), btnPause=document.getElementById('pause');
+let i=0, useA=true, speakTimer=null, autoAdvance=true;
 
-function render(){
-  const url = makeScene(i);
-  frame.classList.remove('active');
-  frame.onload = ()=> frame.classList.add('active');
-  frame.src = url;
-  cap.textContent = CAPTIONS[i] || '';
-  bar.style.width = ((i+1)/CAPTIONS.length*100).toFixed(2)+'%';
+function show(idx){
+  const el = useA ? imgA : imgB, other = useA ? imgB : imgA;
+  other.classList.remove('show');
+  el.src = SCENES[idx].img;
+  el.onload = ()=> el.classList.add('show');
+  cap.textContent = SCENES[idx].text;
+  bar.style.width = ((idx)/SCENES.length*100).toFixed(2)+'%';
+  useA=!useA;
+  speakLine(SCENES[idx].who, SCENES[idx].text);
 }
-btnPrev.onclick = ()=>{ i=(i-1+CAPTIONS.length)%CAPTIONS.length; render(); };
-btnNext.onclick = ()=>{ i=(i+1)%CAPTIONS.length; render(); };
-btnPlay.onclick = ()=>{ clearInterval(t); t=setInterval(()=>{ i=(i+1)%CAPTIONS.length; render(); }, 5000); };
-btnPause.onclick= ()=>{ clearInterval(t); };
-render();
+btnPrev.onclick = ()=>{ stopSpeech(); i=Math.max(0,i-1); show(i); };
+btnNext.onclick = ()=>{ stopSpeech(); i=Math.min(SCENES.length-1,i+1); show(i); };
+btnPlay.onclick = ()=>{ stopSpeech(); show(i); };
+btnPause.onclick= ()=>{ stopSpeech(); autoAdvance=false; };
+
+function stopSpeech(){ if(window.speechSynthesis){ try{speechSynthesis.cancel();}catch(e){} } clearTimeout(speakTimer); }
+function voiceFor(who){
+  const v=speechSynthesis?.getVoices?.()||[];
+  if(!v.length) return null;
+  if(who==='Griff')  return v.find(x=>/en-US|US/i.test(x.lang)&&/Male|Guy|Matthew|Joey/i.test(x.name))||v[0];
+  if(who==='Kevin')  return v.find(x=>/en-US|US/i.test(x.lang)&&/Male|Justin|Matthew|John|Joey/i.test(x.name))||v[1]||v[0];
+  return v.find(x=>/Female|Salli|Joanna|Olivia|Amy/i.test(x.name))||v[2]||v[0];
+}
+function speakLine(who,line){
+  if(!('speechSynthesis' in window)) return; // captions only
+  const u=new SpeechSynthesisUtterance(line); const v=voiceFor(who); if(v) u.voice=v;
+  u.rate=1.0; u.pitch= who==='Kevin'?0.9 : who==='Griff'?1.0 : 1.1;
+  u.onend=()=>{ if(!autoAdvance) return; speakTimer=setTimeout(()=>{ if(i<SCENES.length-1){ i++; show(i);} },800); };
+  try{ speechSynthesis.speak(u);}catch(e){}
+}
+
+/* Start after any first tap/click (audio permission) */
+window.addEventListener('pointerdown', function bootOnce(){
+  window.removeEventListener('pointerdown', bootOnce);
+  show(i);
+});
+
+/* Also render a first frame for SEO/preview (no audio) */
+(function firstFrame(){ const el=imgA; el.src=(SCENES[0]||{}).img; el.onload=()=>el.classList.add('show'); cap.textContent=(SCENES[0]||{}).text||''; })();
 </script>
 </body>
 </html>
