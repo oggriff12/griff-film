@@ -1,25 +1,25 @@
-/* Griff Is Back — tiny animation engine
+/* Griff Is Back — tiny animation engine (final)
    - Parallax background (Canvas)
    - Character rigs (SVG) with enter/exit/move/pose
-   - TTS voiceover (MP3 fallback if provided in JSON)
-   - Basic lip-sync ticks while speaking
-   - Timeline from JSON (actions with time / duration)
+   - TTS voiceover (click once to allow audio)
+   - Image support: URL/data URI OR "var:IMG_NAME" to load from global variables
 */
 
 let STAGE, BG, CITY, CHARS, CAP, WHO, BAR;
-let DPR = 1, W = 1920, H = 1080;
-let sceneIdx = 0, actions = [], playing = false, t0 = 0, raf = 0;
-let speechTimer = null, currentUtter = null;
+let DPR = 1;
+let sceneIdx = 0, actions = [], playing = false, raf = 0;
+let lipT = null;
 
-function qs(id){ return document.getElementById(id); }
+const qs = id => document.getElementById(id);
+const lerp = (a,b,t)=> a+(b-a)*t;
+const ease = t => t<.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2;
+
 function fitCanvas(c){
   const r = c.getBoundingClientRect();
   c.width = r.width * DPR; c.height = r.height * DPR;
   const ctx = c.getContext('2d'); ctx.setTransform(DPR,0,0,DPR,0,0);
   return ctx;
 }
-function lerp(a,b,t){ return a+(b-a)*t; }
-function ease(t){ return t<.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2; }
 
 function drawBG(ctx, tint=[18,28,36]){
   const g = ctx.createLinearGradient(0,0,0,ctx.canvas.height);
@@ -29,7 +29,6 @@ function drawBG(ctx, tint=[18,28,36]){
 }
 function drawCity(ctx, t){
   ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
-  // far
   ctx.fillStyle='rgba(15,22,28,1)';
   for(let i=0;i<18;i++){
     const bw=60+Math.random()*140, bh=120+Math.random()*380;
@@ -37,7 +36,6 @@ function drawCity(ctx, t){
     const y=ctx.canvas.height-220-Math.random()*180;
     ctx.fillRect(x, y-bh, bw, bh);
   }
-  // near
   ctx.fillStyle='rgba(20,28,36,1)';
   for(let i=0;i<12;i++){
     const bw=80+Math.random()*180, bh=180+Math.random()*440;
@@ -45,14 +43,13 @@ function drawCity(ctx, t){
     const y=ctx.canvas.height-140-Math.random()*80;
     ctx.fillRect(x, y-bh, bw, bh);
   }
-  // windows
   for(let i=0;i<220;i++){
     const x=Math.random()*ctx.canvas.width, y=140+Math.random()*(ctx.canvas.height-260);
     if(Math.random()>.35){ ctx.fillStyle='rgba(255,164,60,.85)'; ctx.fillRect(x,y,2,6); }
   }
 }
 
-// Character rigs (very light SVG)
+// Characters
 function rig(name){
   const wrap = document.createElement('div');
   wrap.className='char';
@@ -67,34 +64,28 @@ function rig(name){
   CHARS.appendChild(wrap);
   return wrap;
 }
-const cast = {}; // name -> DOM node
-
-function setCaption(who,text){ WHO.textContent = who || '—'; CAP.textContent = text || ''; }
+const cast = {}; // name -> node
+function setCaption(who,text){ (qs('who').textContent = who || '—'); (CAP.textContent = text || ''); }
 function progress(p){ BAR.style.width = (p*100).toFixed(2)+'%'; }
 
-function say(who, text, mp3){
-  setCaption(who,text);
-  if (mp3){
-    const a = new Audio(mp3);
-    a.onended = ()=> lipSyncStop();
-    a.play().catch(()=>{});
-    lipSyncStart(who);
-    return;
-  }
-  if (!window.speechSynthesis) return;
+function voiceFor(who){
+  const v = speechSynthesis?.getVoices?.() || [];
+  if(!v.length) return null;
+  if(who==='Kevin')   return v.find(x=>/en-US|US/.test(x.lang)&&/Male|John|Justin|Matthew|Joey/i.test(x.name))||v[0];
+  if(who==='Syleste') return v.find(x=>/en-US|en-GB/.test(x.lang)&&/Female|Amy|Joanna|Salli|Olivia/i.test(x.name))||v[0];
+  return v.find(x=>/en-US|US/.test(x.lang)&&/Male|Guy|Matthew|Joey/i.test(x.name))||v[0];
+}
+function say(who, text){
+  if(!('speechSynthesis' in window)) return;
   try{
     const u = new SpeechSynthesisUtterance(text);
-    const v = speechSynthesis.getVoices?.() || [];
-    if (who==='Kevin')   u.voice = v.find(x=>/US|en-US/.test(x.lang)&&/Male|John|Justin|Matthew|Joey/i.test(x.name)) || v[0];
-    else if (who==='Syleste') u.voice = v.find(x=>/US|en-US|en-GB/.test(x.lang)&&/Female|Amy|Joanna|Salli|Olivia/i.test(x.name)) || v[0];
-    else u.voice = v.find(x=>/US|en-US/.test(x.lang)&&/Male|Guy|Matthew|Joey/i.test(x.name)) || v[0];
-    u.rate=1.0; u.pitch = who==='Kevin'?0.9 : who==='Syleste'?1.1 : 1.0;
+    const v = voiceFor(who); if(v) u.voice=v;
+    u.rate=1.0; u.pitch= who==='Kevin'?0.9 : who==='Syleste'?1.1 : 1.0;
     u.onstart = ()=> lipSyncStart(who);
     u.onend   = ()=> lipSyncStop();
-    currentUtter = u; speechSynthesis.speak(u);
+    speechSynthesis.speak(u);
   }catch(e){}
 }
-let lipT=null;
 function lipSyncStart(who){
   const m = CHARS.querySelector(`[data-name="${who}"] .mouth`);
   if(!m) return;
@@ -110,7 +101,6 @@ function placeChar(name, xPct, scale=1, opacity=1){
   n.style.transform = `translateX(-50%) scale(${scale})`;
   n.style.opacity = opacity;
 }
-
 function tween(o){
   const n = cast[o.name] || rig(o.name);
   const tStart = performance.now();
@@ -120,32 +110,26 @@ function tween(o){
   (function step(){
     const t = Math.min(1, (performance.now()-tStart)/(o.dur||1000));
     const e = ease(t);
-    const x = lerp(fromX, o.x, e);
-    const s = lerp(fromS, o.scale??1, e);
-    const a = lerp(fromO, o.opacity??1, e);
-    n.style.left = x+'%';
-    n.style.transform = `translateX(-50%) scale(${s})`;
-    n.style.opacity = a;
+    n.style.left = lerp(fromX, o.x, e)+'%';
+    n.style.transform = `translateX(-50%) scale(${lerp(fromS, o.scale??1, e)})`;
+    n.style.opacity = lerp(fromO, o.opacity??1, e);
     if (t<1) requestAnimationFrame(step);
   })();
 }
-
 function clearCast(){ CHARS.innerHTML=''; for(const k in cast) delete cast[k]; }
 
 function cameraPan(ms=4000){
-  // subtle parallax by redrawing city canvas with time base
-  const cityCtx = CITY.getContext('2d');
+  const ctx = CITY.getContext('2d');
   const tStart = performance.now();
   (function loop(){
     const t = (performance.now()-tStart)/1000;
-    drawCity(cityCtx, t*8);
+    drawCity(ctx, t*8);
     if (performance.now()-tStart < ms) requestAnimationFrame(loop);
   })();
 }
 
-/* ====== Timeline runner ====== */
-async function startEpisode(url){
-  // DOM refs
+export async function startEpisode(url){
+  // DOM
   STAGE = qs('stage'); BG = qs('bg'); CITY = qs('city'); CHARS = qs('chars');
   CAP = qs('caption'); WHO = qs('who'); BAR = qs('bar');
   DPR = window.devicePixelRatio || 1;
@@ -153,23 +137,19 @@ async function startEpisode(url){
   window.addEventListener('resize', ()=>{ fitCanvas(BG); fitCanvas(CITY); drawBG(BG.getContext('2d')); });
 
   // load timeline
-  const res = await fetch(url, {cache:'no-store'}); 
+  const res = await fetch(url, {cache:'no-store'});
   const data = await res.json();
   actions = data.timeline || [];
   sceneIdx = 0; playing = false; progress(0);
 
-  // first paint background
   drawBG(BG.getContext('2d'));
   drawCity(CITY.getContext('2d'), 0);
   CAP.textContent = data.title || '';
 
-  // controls
   qs('play').onclick  = ()=> { playing=true; run(); };
   qs('pause').onclick = ()=> { playing=false; cancelAnimationFrame(raf); if(window.speechSynthesis){ try{speechSynthesis.cancel();}catch{} } };
-  qs('next').onclick  = ()=> { jump(+1); };
-  qs('prev').onclick  = ()=> { jump(-1); };
-
-  // also auto-start on first pointer (mobile)
+  qs('next').onclick  = ()=> jump(+1);
+  qs('prev').onclick  = ()=> jump(-1);
   window.addEventListener('pointerdown', function once(){ window.removeEventListener('pointerdown', once); playing=true; run(); }, {once:true});
 }
 
@@ -180,25 +160,40 @@ function jump(dir){
 }
 
 function run(skipDelay=false){
-  cancelAnimationFrame(raf);
   if (sceneIdx >= actions.length){ playing=false; return; }
   const a = actions[sceneIdx];
   progress(sceneIdx/(actions.length));
 
-  // perform action
   switch(a.type){
-    case 'bg':   drawBG(BG.getContext('2d'), a.tint||[18,28,36]); break;
-    case 'city': cameraPan(a.ms||4000); break;
+    case 'bg':    drawBG(BG.getContext('2d'), a.tint||[18,28,36]); break;
+    case 'city':  cameraPan(a.ms||4000); break;
     case 'enter': placeChar(a.name, a.x, a.scale||1, 0); tween({...a, opacity:1}); break;
     case 'move':  tween(a); break;
     case 'exit':  tween({...a, opacity:0}); break;
-    case 'say':   setCaption(a.name,a.text); say(a.name, a.text, a.audio); break;
-    case 'image': // full-screen still (e.g., poster or collage)
-      const img = new Image(); img.onload=()=>{ const ctx=BG.getContext('2d'); ctx.drawImage(img,0,0,ctx.canvas.width,ctx.canvas.height); };
-      img.src = a.src; setCaption(a.name||'', a.text||''); break;
+    case 'say':   setCaption(a.name,a.text); say(a.name, a.text); break;
+    case 'image': {
+      let src = a.src || '';
+      if (src.startsWith('var:')) {
+        const key = src.slice(4);
+        src = (globalThis || window)[key] || '';
+      }
+      if (!src) { setCaption(a.name||'', a.text||''); break; }
+      const img = new Image();
+      img.onload=()=>{
+        const ctx=BG.getContext('2d');
+        const cw=ctx.canvas.width, ch=ctx.canvas.height;
+        const r=Math.max(cw/img.width, ch/img.height);
+        const w=img.width*r, h=img.height*r;
+        ctx.clearRect(0,0,cw,ch);
+        ctx.drawImage(img, (cw-w)/2, (ch-h)/2, w, h);
+      };
+      img.src = src;
+      setCaption(a.name||'', a.text||'');
+      break;
+    }
   }
 
-  // schedule next action
-  const wait = skipDelay ? 100 : (a.wait||1600);
+  const wait = skipDelay ? 120 : (a.wait||1600);
   setTimeout(()=>{ if(playing){ sceneIdx++; run(); } }, wait);
 }
+window.startEpisode = startEpisode;
