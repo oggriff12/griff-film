@@ -1,0 +1,35 @@
+{
+  "title": "Episode 1 — Back Where It Started",
+  "timeline": [
+    { "type": "bg",   "tint": [18,28,36], "wait": 400 },
+    { "type": "city", "ms": 4000, "wait": 800 },
+
+    { "type": "image", "src": "var:IMG_POSTER",  "text": "They say the place you start… shapes the man you become.", "wait": 1800 },
+    { "type": "say",   "name": "Griff", "text": "They say the place you start… shapes the man you become.", "wait": 1800 },
+
+    { "type": "image", "src": "var:IMG_STREETS", "text": "For me, that place was Delaware. Wilmington. Blood on bricks. Pain in the pavement.", "wait": 2000 },
+    { "type": "say",   "name": "Griff", "text": "For me, that place was Delaware. Wilmington. Blood on bricks. Pain in the pavement.", "wait": 2000 },
+
+    { "type": "bg",    "tint": [26,20,16], "wait": 400 },
+    { "type": "enter", "name": "Griff", "x": 30, "scale": 1.0, "wait": 1000 },
+    { "type": "say",   "name": "Griff", "text": "By 17, I had more funerals than birthdays. I wasn’t living, just breathing.", "wait": 2200 },
+
+    { "type": "move",  "name": "Griff", "x": 42, "scale": 1.06, "wait": 900 },
+    { "type": "say",   "name": "Griff", "text": "I left for Maryland with forty dollars… and met Kevin.", "wait": 1800 },
+
+    { "type": "enter", "name": "Kevin", "x": 70, "scale": 1.0, "wait": 800 },
+    { "type": "say",   "name": "Kevin", "text": "You got hustle in your eyes, boy. You just don’t know what gear to use.", "wait": 2200 },
+
+    { "type": "say",   "name": "Griff",  "text": "He taught me cars—and how to breathe without watching my back.", "wait": 2000 },
+    { "type": "exit",  "name": "Kevin",  "x": 110, "scale": 1.0, "wait": 700 },
+
+    { "type": "bg",    "tint": [12,22,28], "wait": 400 },
+    { "type": "say",   "name": "Griff",  "text": "But I wanted more. I chased Los Angeles.", "wait": 1600 },
+
+    { "type": "image", "src": "var:IMG_SHELTER", "text": "The glamour faded fast—couches, fake friends, and smoke chasing peace.", "wait": 2000 },
+    { "type": "say",   "name": "Griff",  "text": "The glamour faded fast—couches, fake friends, and smoke chasing peace.", "wait": 2000 },
+
+    { "type": "bg",    "tint": [16,16,28], "wait": 400 },
+    { "type": "say",   "name": "Griff",  "text": "If the streets made me… maybe I can unmake myself.", "wait": 2200 }
+  ]
+}
