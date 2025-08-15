@@ -4,7 +4,7 @@
     { "type": "bgImage", "src": "var:IMG_POSTER", "wait": 1200 },
     { "type": "say", "name": "Griff", "text": "They say the place you start… shapes the man you become.", "wait": 1600 },
 
-    { "type": "bg", "tint": [18,28,36], "wait": 200 },
+    { "type": "bg", "tint": [18, 28, 36], "wait": 200 },
     { "type": "city", "ms": 4200, "wait": 200 },
 
     { "type": "enter", "name": "Griff", "x": 34, "scale": 1.02, "wait": 600 },
@@ -20,11 +20,10 @@
     { "type": "enter", "name": "Kevin", "x": 68, "scale": 1.0, "wait": 500 },
     { "type": "pose",  "name": "Kevin", "arm": "R", "deg": -20, "wait": 50 },
     { "type": "say",   "name": "Kevin", "text": "You got hustle in your eyes, boy. You just don’t know what gear to use.", "wait": 2200 },
-    { "type": "pose",  "name": "Kevin", "arm": "R", "deg": 0, "wait": 50 },
     { "type": "say",   "name": "Griff",  "text": "He taught me cars—and how to breathe without looking over my shoulder.", "wait": 2000 },
     { "type": "exit",  "name": "Kevin",  "x": 115, "wait": 500 },
 
-    { "type": "bg", "tint": [12,22,28], "wait": 200 },
+    { "type": "bg", "tint": [12, 22, 28], "wait": 200 },
     { "type": "city", "ms": 3600, "wait": 200 },
     { "type": "say", "name": "Griff", "text": "But the city kept calling. I chased Los Angeles.", "wait": 1400 },
 
