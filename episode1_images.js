@@ -1,10 +1,5 @@
-// Griff Is Back — Embedded images for Episode 1
+// Griff Is Back — Embedded images for Episode 1 (global)
 
-// Poster image
-window.IMG_POSTER = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA..."; // your full base64 string
-
-// Shelter image
-window.IMG_SHELTER = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA..."; // your full base64 string
-
-// Streets image
-window.IMG_STREETS = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA..."; // your full base64 string
+window.IMG_POSTER  = "data:image/jpeg;base64,REPLACE_WITH_YOUR_FULL_BASE64_POSTER";
+window.IMG_SHELTER = "data:image/jpeg;base64,REPLACE_WITH_YOUR_FULL_BASE64_SHELTER";
+window.IMG_STREETS = "data:image/jpeg;base64,REPLACE_WITH_YOUR_FULL_BASE64_STREETS";
