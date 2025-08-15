@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8" />
+<title>Base64 Tool</title>
+<style>
+  body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#0b0f14;color:#e6edf3;margin:0;padding:24px}
+  h1{font-size:20px;margin:0 0 16px}
+  .card{background:#0f1720;border:1px solid #1f2a36;border-radius:12px;padding:16px;margin:0 0 16px}
+  input[type=file]{display:block;margin:12px 0}
+  textarea{width:100%;height:180px;background:#0b1117;color:#e6edf3;border:1px solid #1f2a36;border-radius:8px;padding:12px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace}
+  .row{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}
+  button{background:#0ea5e9;border:0;color:#00131f;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer}
+  .tag{background:#12212e;border:1px solid #1d3345;border-radius:999px;padding:6px 10px;margin-right:8px}
+  img{max-width:280px;border-radius:8px;border:1px solid #1f2a36}
+  small{opacity:.7}
+</style>
+<div class="card">
+  <h1>Convert an image to Base64 (Data URL)</h1>
+  <div class="row"><span class="tag">poster</span><span class="tag">shelter</span><span class="tag">streets</span></div>
+  <input id="file" type="file" accept="image/*">
+  <div class="row">
+    <img id="preview" alt="">
+  </div>
+  <textarea id="out" placeholder="The data URL will appear here…"></textarea>
+  <div class="row">
+    <button id="copy">Copy</button>
+    <small>Paste into <b>episode1_images.js</b> on the right-hand side of the variables.</small>
+  </div>
+</div>
+<script>
+  const $ = id => document.getElementById(id);
+  $('file').addEventListener('change', e=>{
+    const f = e.target.files[0]; if(!f) return;
+    const r = new FileReader();
+    r.onload = () => { $('out').value = r.result; $('preview').src = r.result; };
+    r.readAsDataURL(f);
+  });
+  $('copy').onclick = async ()=>{
+    try{ await navigator.clipboard.writeText($('out').value); $('copy').textContent='Copied!'; setTimeout(()=>$('copy').textContent='Copy',900);}catch{}
+  };
+</script>
