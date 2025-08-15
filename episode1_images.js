@@ -1,5 +1,4 @@
-// Griff Is Back — Episode 1 images (Base64 data URLs)
-
-window.IMG_POSTER  = "data:image/jpeg;base64,....";
-window.IMG_SHELTER = "data:image/jpeg;base64,....";
-window.IMG_STREETS = "data:image/jpeg;base64,....";
+// Griff Is Back – Episode 1 images (local asset paths)
+window.IMG_POSTER  = "assets/ep1_poster.png";
+window.IMG_SHELTER = "assets/ep1_shelter.png";
+window.IMG_STREETS = "assets/ep1_streets.png";
