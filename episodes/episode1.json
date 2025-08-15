@@ -1,33 +1,41 @@
 {
   "title": "Episode 1 — Back Where It Started",
   "timeline": [
-    { "type": "bg",   "tint": [18,28,36], "wait": 300 },
-    { "type": "city", "ms": 4200, "wait": 300 },
+    { "type": "bgImage", "src": "var:IMG_POSTER", "wait": 1200 },
+    { "type": "say", "name": "Griff", "text": "They say the place you start… shapes the man you become.", "wait": 1600 },
 
-    { "type": "image", "src": "var:IMG_POSTER",  "text": "They say the place you start… shapes the man you become.", "wait": 1600 },
-    { "type": "say",   "name": "Griff", "text": "They say the place you start… shapes the man you become.", "wait": 1600 },
+    { "type": "bg", "tint": [18,28,36], "wait": 200 },
+    { "type": "city", "ms": 4200, "wait": 200 },
 
-    { "type": "enter", "name": "Griff", "x": 30, "scale": 1.0, "wait": 700 },
+    { "type": "enter", "name": "Griff", "x": 34, "scale": 1.02, "wait": 600 },
+    { "type": "pose",  "name": "Griff", "arm": "R", "deg": -12, "wait": 50 },
     { "type": "say",   "name": "Griff", "text": "For me — Wilmington, Delaware. Blood on bricks. Pain in the pavement.", "wait": 2200 },
-    { "type": "move",  "name": "Griff", "x": 42, "scale": 1.06, "wait": 900 },
-    { "type": "say",   "name": "Griff", "text": "By seventeen I had more funerals than birthdays. I wasn’t living, just breathing.", "wait": 2500 },
 
-    { "type": "city",  "ms": 3600, "wait": 300 },
-    { "type": "say",   "name": "Griff", "text": "I bounced to Maryland with forty dollars… and ran into Kevin.", "wait": 1800 },
-    { "type": "enter", "name": "Kevin", "x": 70, "scale": 1.0, "wait": 600 },
+    { "type": "move",  "name": "Griff", "x": 44, "scale": 1.08, "wait": 800 },
+    { "type": "say",   "name": "Griff", "text": "By seventeen I had more funerals than birthdays. I wasn’t living, just breathing.", "wait": 2400 },
+
+    { "type": "bgImage", "src": "var:IMG_STREETS", "wait": 800 },
+    { "type": "say",     "name": "Griff", "text": "I bounced to Maryland with forty dollars… and met Kevin.", "wait": 1800 },
+
+    { "type": "enter", "name": "Kevin", "x": 68, "scale": 1.0, "wait": 500 },
+    { "type": "pose",  "name": "Kevin", "arm": "R", "deg": -20, "wait": 50 },
     { "type": "say",   "name": "Kevin", "text": "You got hustle in your eyes, boy. You just don’t know what gear to use.", "wait": 2200 },
-    { "type": "say",   "name": "Griff",  "text": "He taught me cars—and how to breathe without watching my back.", "wait": 2200 },
-    { "type": "exit",  "name": "Kevin",  "x": 110, "wait": 600 },
+    { "type": "pose",  "name": "Kevin", "arm": "R", "deg": 0, "wait": 50 },
+    { "type": "say",   "name": "Griff",  "text": "He taught me cars—and how to breathe without looking over my shoulder.", "wait": 2000 },
+    { "type": "exit",  "name": "Kevin",  "x": 115, "wait": 500 },
 
-    { "type": "bg",    "tint": [12,22,28], "wait": 300 },
-    { "type": "say",   "name": "Griff",  "text": "But the city kept calling. I chased Los Angeles.", "wait": 1400 },
+    { "type": "bg", "tint": [12,22,28], "wait": 200 },
+    { "type": "city", "ms": 3600, "wait": 200 },
+    { "type": "say", "name": "Griff", "text": "But the city kept calling. I chased Los Angeles.", "wait": 1400 },
 
-    { "type": "image", "src": "var:IMG_STREETS", "text": "The glamour faded fast—couches, fake friends, and smoke chasing peace.", "wait": 2000 },
-    { "type": "say",   "name": "Griff",  "text": "I didn’t realize I was running from peace, trying to light it up in smoke.", "wait": 2200 },
+    { "type": "enter", "name": "Griff", "x": 56, "scale": 1.04, "wait": 300 },
+    { "type": "glove", "name": "Griff", "on": true, "wait": 50 },
+    { "type": "pose",  "name": "Griff", "arm": "R", "deg": -40, "wait": 50 },
+    { "type": "say",   "name": "Griff", "text": "I didn’t realize I was running from peace, trying to light it up in smoke.", "wait": 2200 },
+    { "type": "glove", "name": "Griff", "on": false, "wait": 50 },
+    { "type": "pose",  "name": "Griff", "arm": "R", "deg": 0, "wait": 50 },
 
-    { "type": "enter", "name": "Griff", "x": 56, "scale": 1.04, "wait": 500 },
-    { "type": "say",   "name": "Griff",  "text": "If the streets made me… maybe I can unmake myself.", "wait": 2200 },
-
-    { "type": "image", "src": "var:IMG_SHELTER", "text": "— Title: GRIFF IS BACK —", "wait": 1600 }
+    { "type": "bgImage", "src": "var:IMG_SHELTER", "wait": 1000 },
+    { "type": "say",     "name": "Griff", "text": "If the streets made me… maybe I can unmake myself.", "wait": 2200 }
   ]
 }
