@@ -3,16 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Griff Is Back — Player</title>
+<title>GRIFF IS BACK — Player</title>
 <link rel="stylesheet" href="style.css">
 <style>
   :root{--teal:#00e6d0;--orange:#ff6a00}
-  html,body{height:100%;background:#000;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif;margin:0}
-  .stage{position:fixed;inset:0;overflow:hidden;background:radial-gradient(1200px 600px at 50% 110%, #0b1220 0%, #05070c 60%, #000 100%)}
-  .layer{position:absolute;inset:0;will-change:transform}
-  .bg{filter:brightness(.9) saturate(1.05)}
-  .city{opacity:.9}
-  .char{position:absolute;bottom:2%; transform-origin:50% 90%; will-change:transform,opacity; filter:drop-shadow(0 12px 34px rgba(0,0,0,.6))}
+  html,body{height:100%;margin:0;background:#000;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif}
+  #stage{position:fixed;inset:0;overflow:hidden;background:radial-gradient(1200px 600px at 50% 110%,#0b1220 0%,#05070c 60%,#000 100%)}
+  canvas.bg,canvas.city{position:absolute;inset:0}
+  .layer{position:absolute;inset:0;pointer-events:none}
+  .char{position:absolute;bottom:2%;transform-origin:50% 90%;will-change:transform,opacity;filter:drop-shadow(0 12px 34px rgba(0,0,0,.6))}
   .caption{position:absolute;left:0;right:0;bottom:18px;margin:auto;max-width:min(980px,92%);text-align:center;
            font-size:clamp(16px,2.2vw,22px);line-height:1.35;text-shadow:0 2px 24px #000,0 0 6px rgba(0,0,0,.6)}
   .hud{position:fixed;left:12px;right:12px;top:12px;display:flex;gap:8px;justify-content:space-between;align-items:center;pointer-events:none}
@@ -25,10 +24,10 @@
 </style>
 </head>
 <body>
-<div class="stage" id="stage">
-  <canvas class="layer bg" id="bg"></canvas>
-  <canvas class="layer city" id="city"></canvas>
-  <div class="layer chars" id="chars"></div>
+<div id="stage">
+  <canvas class="bg" id="bg"></canvas>
+  <canvas class="city" id="city"></canvas>
+  <div class="layer" id="chars"></div>
   <div class="caption" id="caption"></div>
 </div>
 
@@ -47,12 +46,10 @@
 </div>
 <div class="progress"><div class="bar" id="bar"></div></div>
 
-<!-- 1) load your base64 image variables -->
+<!-- Order matters: images first, then engine -->
 <script src="episode1_images.js"></script>
-<!-- 2) the engine -->
 <script src="episode-engine.js"></script>
 <script>
-  // /player.html?ep=1
   const ep = new URLSearchParams(location.search).get('ep') || '1';
   startEpisode(`/episodes/episode${ep}.json`);
 </script>
