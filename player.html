@@ -42,16 +42,17 @@
   </div>
   <div class="right">
     <a class="btn" href="index.html">Home</a>
+    <a class="btn" target="_blank" rel="noopener" href="https://instagram.com/Og__griff">Instagram</a>
   </div>
 </div>
 <div class="progress"><div class="bar" id="bar"></div></div>
 
-<!-- Load your base64 image variables (IMG_POSTER, IMG_SHELTER, IMG_STREETS) -->
+<!-- 1) load your base64 image variables -->
 <script src="episode1_images.js"></script>
-<!-- Animation engine -->
+<!-- 2) the engine -->
 <script src="episode-engine.js"></script>
 <script>
-  // Read ep number from query: /player.html?ep=1
+  // /player.html?ep=1
   const ep = new URLSearchParams(location.search).get('ep') || '1';
   startEpisode(`/episodes/episode${ep}.json`);
 </script>
